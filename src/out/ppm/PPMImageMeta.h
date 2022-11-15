@@ -1,4 +1,5 @@
-#pragma once
+#ifndef PPM_IMAGE_META_H
+#define PPM_IMAGE_META_H
 
 #include <string>
 #include <ostream>
@@ -6,13 +7,14 @@
 
 /// <summary>
 /// Holds metadata of a PPM output image.
+/// Has methods for writing data to an output stream.
 /// </summary>
-class PPMImage {
+class PPMImageMeta {
 public:
-	PPMImage(
-		unsigned short imgWidth,
-		unsigned short imgHeight,
-		unsigned short maxColor
+	PPMImageMeta(
+		uint16_t imgWidth,
+		uint16_t imgHeight,
+		uint8_t maxColor
 	);
 
 	/// <summary>
@@ -24,5 +26,7 @@ private:
 	std::string colorFormat;
 	uint16_t imgWidth;
 	uint16_t imgHeight;
-	uint16_t maxColor;
+	uint8_t maxColor;
 };
+
+#endif // !PPM_IMAGE_META_H
