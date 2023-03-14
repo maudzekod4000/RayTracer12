@@ -9,11 +9,19 @@ add_subdirectory(${DIR}/lib/glm) # Folder where glm's CMakeLists.txt lives
 add_executable(${PROJECT_NAME} 
 	${DIR}/main.cpp
 	${DIR}/src/out/ppm/PPMImageMeta.h
-	${DIR}/src/out/ppm/PPMImageMeta.cpp)
+	${DIR}/src/out/ppm/PPMImageMeta.cpp
+	${DIR}/src/out/ppm/PPMImage.h
+	${DIR}/src/out/ppm/PPMImage.cpp
+	${DIR}/src/out/ppm/PPMImageWriter.h
+	${DIR}/src/out/ppm/PPMImageWriter.cpp
+	${DIR}/src/out/ppm/PPMImageFileWriter.h
+	${DIR}/src/out/ppm/PPMImageFileWriter.cpp
 
-set(CMAKE_CXX_STANDARD 11)
+
+	${DIR}/src/utils/TypeDefs.h
+)
+
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC glm) # Actually linking glm into the project
-
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR} ${DIR}/lib) # for resolving includes
+target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR} ${DIR}/lib ${DIR}/src) # for resolving includes

@@ -7,26 +7,27 @@
 
 /// <summary>
 /// Holds metadata of a PPM output image.
-/// Has methods for writing data to an output stream.
+/// Has methods for writing metadata to an output stream.
 /// </summary>
 class PPMImageMeta {
 public:
+	friend class PPMImage;
 	PPMImageMeta(
 		uint16_t imgWidth,
 		uint16_t imgHeight,
-		uint8_t maxColor
+		uint16_t maxColor
 	);
 
 	/// <summary>
 	/// Given an output stream it writes instance fields to it.
 	/// </summary>
 	/// <param name="os">Output stream to write to.</param>
-	void writeHeaders(std::ostream& os);
+	void writeHeaders(std::ostream& os) const;
 private:
-	std::string colorFormat;
-	uint16_t imgWidth;
-	uint16_t imgHeight;
-	uint8_t maxColor;
+	std::string _colorFormat;
+	const uint16_t _imgWidth;
+	const uint16_t _imgHeight;
+	const uint16_t _maxColor;
 };
 
 #endif // !PPM_IMAGE_META_H
