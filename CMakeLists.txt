@@ -17,11 +17,14 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/out/ppm/PPMImageFileWriter.h
 	${DIR}/src/out/ppm/PPMImageFileWriter.cpp
 
+	${DIR}/src/letters/LetterSegment.h
+	${DIR}/src/letters/Letter.h
+	${DIR}/src/letters/LetterFactory.h
 
 	${DIR}/src/utils/TypeDefs.h
 )
 
-set(CMAKE_CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_BINARY_DIR} ${DIR}/lib ${DIR}/src) # for resolving includes
