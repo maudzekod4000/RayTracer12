@@ -17,6 +17,8 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/out/ppm/PPMImageFileWriter.h
 	${DIR}/src/out/ppm/PPMImageFileWriter.cpp
 
+	${DIR}/src/sampling/Raygen.h
+
 	${DIR}/src/letters/LetterSegment.h
 	${DIR}/src/letters/Letter.h
 	${DIR}/src/letters/LetterFactory.h

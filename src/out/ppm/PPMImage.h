@@ -16,7 +16,6 @@ public:
   PPMImage(const PPMImageMeta& metadata);
 
   void writePixel(const Color& color);
-
 protected:
   std::vector<std::vector<Color>> _image;
   const PPMImageMeta& _metadata;
