@@ -4,7 +4,7 @@
 #include <utils/TypeDefs.h>
 
 struct Raygen {
-  inline Raygen(int32_t wid, int32_t hei, const glm::vec3& cameraPos, float focalDist):
+  inline Raygen(int32_t wid, int32_t hei, const Vec3& cameraPos, float focalDist):
     _width(wid), _height(hei), aspRat(static_cast<float>(wid) / hei), cameraPos(cameraPos), focalDist(focalDist) {
 
   }
@@ -28,7 +28,7 @@ struct Raygen {
     /* Consider the aspect ratio */
     x *= aspRat;
 
-    glm::vec3 rayDir(x, y, focalDist);
+    Vec3 rayDir(x, y, focalDist);
 
     return Ray { cameraPos, glm::normalize(rayDir) };
   }
@@ -36,7 +36,7 @@ struct Raygen {
   int32_t _width;
   int32_t _height;
   float aspRat;
-  glm::vec3 cameraPos;
+  Vec3 cameraPos;
   float focalDist;
 };
 
