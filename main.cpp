@@ -3,6 +3,9 @@
 #include <fstream>
 #include <string>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #include "src/out/ppm/PPMImageMeta.h"
 #include "src/out/ppm/PPMImage.h"
 #include "src/out/ppm/PPMImageWriter.h"
@@ -16,9 +19,23 @@ const int16_t RENDER_WIDTH = 640;
 const int16_t RENDER_HEIGHT = 480;
 const int16_t MAX_COLOR = 255;
 
+std::vector<Triangle> circle(Vec3 center, float r, float angleDeg) {
+  std::vector<Triangle> tris;
+
+  Vec3 firstPoint = Vec3(center.x + 1, center.y, center.z);
+
+  for (float degrees = angleDeg; degrees <= 360.0f; degrees += angleDeg) {
+    Vec3 secondPoint = Vec3(glm::cos(glm::radians(degrees)), glm::sin(glm::radians(degrees)), center.z);
+    tris.emplace_back(center, firstPoint, secondPoint);
+    firstPoint = secondPoint;
+  }
+
+  return tris;
+}
+
 int main() {
-  std::vector<Triangle> triangles;
-  Triangle a(Vec3(-1.75, -1.75, -3), Vec3(1.75, -1.75, -3), Vec3(0, 1.75, -3));
+  std::vector<Triangle> triangles = circle(Vec3(0, 0, -3), 1, 10.0f);
+
 
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
@@ -28,11 +45,17 @@ int main() {
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
     for (int32_t col = 0; col < RENDER_WIDTH; col++) {
       Ray& ray = s.gen(col, row);
+      bool intersects = false;
 
-      if (a.intersect(ray)) {
-        image.writePixel(Color(255, 0, 0));
+      for (Triangle& tr : triangles) {
+        if (tr.intersect(ray)) {
+          image.writePixel(tr.col);
+          intersects = true;
+          break;
+        }
       }
-      else {
+      
+      if (!intersects) {
         image.writePixel(Color(0, 255, 0));
       }
     }

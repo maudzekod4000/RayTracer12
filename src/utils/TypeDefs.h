@@ -15,10 +15,13 @@ struct Ray {
 using namespace glm;
 
 struct Triangle {
-  inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c): a(a), b(b), c(c) {}
+  inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c): a(a), b(b), c(c), col(
+    Color(rand() % 255, rand() % 255, rand() % 255)
+  ) {}
   Vec3 a;
   Vec3 b;
   Vec3 c;
+  Color col;
 
   inline float area() const {
     return glm::length(glm::cross(b - a, c - a)) / 2.0f;
@@ -41,10 +44,11 @@ struct Triangle {
     float t = glm::dot(this->a - ray.origin, n) / rayPlane;
     Vec3 p = ray.origin + t * ray.dir;
     
-    // TODO: Compare with epsilon
-    return (dot(n, cross(b - a, p - a)) > 0.0f) &&
-      (dot(n, cross(c - b, p - b)) > 0.0f) &&
-      (dot(n, cross(a - c, p - c)) > 0.0f);
+    float e = 0.000000001f;
+
+    return (dot(n, cross(b - a, p - a)) - e > 0.0f) &&
+      (dot(n, cross(c - b, p - b)) - e > 0.0f) &&
+      (dot(n, cross(a - c, p - c)) - e > 0.0f);
   }
 };
 
