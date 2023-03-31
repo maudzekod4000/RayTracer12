@@ -10,6 +10,7 @@ typedef glm::vec3 Vec3;
 struct Ray {
   Vec3 origin; // Could be a reference
   Vec3 dir;
+  float minT = 999999.9f;
 };
 
 using namespace glm;
@@ -32,7 +33,7 @@ struct Triangle {
     return glm::normalize(glm::cross(b - a, c - a));
   }
 
-  inline bool intersect(const Ray& ray) const {
+  inline bool intersect(Ray& ray) const {
     Vec3 n = normal();
     float rayPlane = dot(ray.dir, n);
 
@@ -42,6 +43,12 @@ struct Triangle {
     }
 
     float t = glm::dot(this->a - ray.origin, n) / rayPlane;
+
+    if (t > ray.minT) {
+      return false;
+    }
+    ray.minT = t;
+
     Vec3 p = ray.origin + t * ray.dir;
     
     float e = 0.000000001f;
@@ -50,6 +57,16 @@ struct Triangle {
       (dot(n, cross(c - b, p - b)) - e > 0.0f) &&
       (dot(n, cross(a - c, p - c)) - e > 0.0f);
   }
+};
+
+struct Rect {
+  inline Rect(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d) :
+    a(a), b(b), c(c), d(d) {}
+
+  Vec3 a;
+  Vec3 b;
+  Vec3 c;
+  Vec3 d;
 };
 
 #endif // !TYPE_DEFS_H

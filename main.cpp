@@ -34,7 +34,11 @@ std::vector<Triangle> circle(Vec3 center, float r, float angleDeg) {
 }
 
 int main() {
-  std::vector<Triangle> triangles = circle(Vec3(0, 0, -3), 1, 10.0f);
+  //std::vector<Triangle> triangles = circle(Vec3(0, 0, -3), 1, 10.0f);
+  std::vector<Triangle> triangles = {
+    Triangle(Vec3(-2, 1, -3), Vec3(-0.5, 1, -3), Vec3(-1.5, 2, -3)),
+    Triangle(Vec3(0.5, 1, -4), Vec3(2, 1, -4), Vec3(1.5, 2, -4))
+  };
 
 
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
@@ -51,7 +55,6 @@ int main() {
         if (tr.intersect(ray)) {
           image.writePixel(tr.col);
           intersects = true;
-          break;
         }
       }
       
