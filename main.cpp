@@ -26,7 +26,7 @@ std::vector<Triangle> circle(Vec3 center, float r, float angleDeg) {
 
   for (float degrees = angleDeg; degrees <= 360.0f; degrees += angleDeg) {
     Vec3 secondPoint = Vec3(glm::cos(glm::radians(degrees)), glm::sin(glm::radians(degrees)), center.z);
-    tris.emplace_back(center, firstPoint, secondPoint);
+    tris.emplace_back(center, firstPoint, secondPoint, secondPoint);
     firstPoint = secondPoint;
   }
 
@@ -36,8 +36,8 @@ std::vector<Triangle> circle(Vec3 center, float r, float angleDeg) {
 int main() {
   //std::vector<Triangle> triangles = circle(Vec3(0, 0, -3), 1, 10.0f);
   std::vector<Triangle> triangles = {
-    Triangle(Vec3(-2, 1, -3), Vec3(-0.5, 1, -3), Vec3(-1.5, 2, -3)),
-    Triangle(Vec3(0.5, 1, -4), Vec3(2, 1, -4), Vec3(1.5, 2, -4))
+    Triangle(Vec3(-0.5, 1, -3.5), Vec3(0.5, 1, -3.5), Vec3(0, 2, -3.5), Color(0,0,255)),
+    Triangle(Vec3(0, 1, -3.2), Vec3(2, 1, -3.2), Vec3(1, 2, -3.2), Color(255, 0, 0))
   };
 
 
@@ -50,16 +50,20 @@ int main() {
     for (int32_t col = 0; col < RENDER_WIDTH; col++) {
       Ray& ray = s.gen(col, row);
       bool intersects = false;
+      Color currentColor;
 
       for (Triangle& tr : triangles) {
         if (tr.intersect(ray)) {
-          image.writePixel(tr.col);
+          currentColor = tr.col;
           intersects = true;
         }
       }
       
       if (!intersects) {
         image.writePixel(Color(0, 255, 0));
+      }
+      else {
+        image.writePixel(currentColor);
       }
     }
   }

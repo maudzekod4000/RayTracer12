@@ -1,6 +1,8 @@
 #ifndef TYPE_DEFS_H
 #define TYPE_DEFS_H
 
+#include <iostream>
+
 #include "glm/glm.hpp"
 
 typedef glm::vec3 Color;
@@ -16,8 +18,8 @@ struct Ray {
 using namespace glm;
 
 struct Triangle {
-  inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c): a(a), b(b), c(c), col(
-    Color(rand() % 255, rand() % 255, rand() % 255)
+  inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c, const Color& col): a(a), b(b), c(c), col(
+    col
   ) {}
   Vec3 a;
   Vec3 b;
@@ -34,6 +36,9 @@ struct Triangle {
   }
 
   inline bool intersect(Ray& ray) const {
+    /*if (this->col.r == 255) {
+      std::cout << "Shenkobari" << std::endl;
+    }*/
     Vec3 n = normal();
     float rayPlane = dot(ray.dir, n);
 
@@ -47,15 +52,20 @@ struct Triangle {
     if (t > ray.minT) {
       return false;
     }
-    ray.minT = t;
 
     Vec3 p = ray.origin + t * ray.dir;
     
-    float e = 0.000000001f;
+    float e = 0.0001f;
 
-    return (dot(n, cross(b - a, p - a)) - e > 0.0f) &&
+    bool doesIntersect = (dot(n, cross(b - a, p - a)) - e > 0.0f) &&
       (dot(n, cross(c - b, p - b)) - e > 0.0f) &&
       (dot(n, cross(a - c, p - c)) - e > 0.0f);
+
+    if (doesIntersect) {
+      ray.minT = t;
+    }
+
+    return doesIntersect;
   }
 };
 
