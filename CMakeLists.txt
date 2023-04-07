@@ -19,10 +19,6 @@ add_executable(${PROJECT_NAME}
 
 	${DIR}/src/sampling/Raygen.h
 
-	${DIR}/src/letters/LetterSegment.h
-	${DIR}/src/letters/Letter.h
-	${DIR}/src/letters/LetterFactory.h
-
 	${DIR}/src/utils/TypeDefs.h
 )
 
