@@ -5,7 +5,6 @@
 
 #include "glm/glm.hpp"
 
-typedef glm::vec3 Color;
 typedef glm::vec2 Point2D;
 typedef glm::vec3 Vec3;
 
@@ -16,6 +15,12 @@ struct Ray {
 };
 
 using namespace glm;
+
+struct Color {
+  uint8_t r;
+  uint8_t g;
+  uint8_t b;
+};
 
 struct Triangle {
   inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c, const Color& col): a(a), b(b), c(c), col(
@@ -36,9 +41,6 @@ struct Triangle {
   }
 
   inline bool intersect(Ray& ray) const {
-    /*if (this->col.r == 255) {
-      std::cout << "Shenkobari" << std::endl;
-    }*/
     Vec3 n = normal();
     float rayPlane = dot(ray.dir, n);
 
@@ -54,29 +56,18 @@ struct Triangle {
     }
 
     Vec3 p = ray.origin + t * ray.dir;
-    
     float e = 0.0001f;
 
-    bool doesIntersect = (dot(n, cross(b - a, p - a)) - e > 0.0f) &&
-      (dot(n, cross(c - b, p - b)) - e > 0.0f) &&
-      (dot(n, cross(a - c, p - c)) - e > 0.0f);
-
-    if (doesIntersect) {
-      ray.minT = t;
+    if (dot(n, cross(b - a, p - a)) - e <= 0.0f ||
+      dot(n, cross(c - b, p - b)) - e <= 0.0f ||
+      dot(n, cross(a - c, p - c)) - e <= 0.0f) {
+      return false;
     }
 
-    return doesIntersect;
+    ray.minT = t;
+
+    return true;
   }
-};
-
-struct Rect {
-  inline Rect(const Vec3& a, const Vec3& b, const Vec3& c, const Vec3& d) :
-    a(a), b(b), c(c), d(d) {}
-
-  Vec3 a;
-  Vec3 b;
-  Vec3 c;
-  Vec3 d;
 };
 
 #endif // !TYPE_DEFS_H

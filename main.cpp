@@ -19,28 +19,11 @@ const int16_t RENDER_WIDTH = 640;
 const int16_t RENDER_HEIGHT = 480;
 const int16_t MAX_COLOR = 255;
 
-std::vector<Triangle> circle(Vec3 center, float r, float angleDeg) {
-  std::vector<Triangle> tris;
-
-  Vec3 firstPoint = Vec3(center.x + 1, center.y, center.z);
-
-  for (float degrees = angleDeg; degrees <= 360.0f; degrees += angleDeg) {
-    Vec3 secondPoint = Vec3(glm::cos(glm::radians(degrees)), glm::sin(glm::radians(degrees)), center.z);
-    tris.emplace_back(center, firstPoint, secondPoint, secondPoint);
-    firstPoint = secondPoint;
-  }
-
-  return tris;
-}
-
 int main() {
-  //std::vector<Triangle> triangles = circle(Vec3(0, 0, -3), 1, 10.0f);
   std::vector<Triangle> triangles = {
-    Triangle(Vec3(-0.5, 1, -3.5), Vec3(0.5, 1, -3.5), Vec3(0, 2, -3.5), Color(0,0,255)),
-    Triangle(Vec3(0, 1, -3.2), Vec3(2, 1, -3.2), Vec3(1, 2, -3.2), Color(255, 0, 0))
+    Triangle(Vec3(-0.5, 1, -3.5), Vec3(0.5, 1, -3.5), Vec3(0, 2, -3.5), Color{0,0,255}),
+    Triangle(Vec3(0, 1, -3.2), Vec3(2, 1, -3.2), Vec3(1, 2, -3.2), Color{255, 0, 0 })
   };
-
-
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
   Vec3 cameraPos{};
@@ -60,7 +43,7 @@ int main() {
       }
       
       if (!intersects) {
-        image.writePixel(Color(0, 255, 0));
+        image.writePixel(Color{ 0, 255, 0 });
       }
       else {
         image.writePixel(currentColor);
@@ -71,5 +54,5 @@ int main() {
   PPMImageFileWriter fileWriter(image, "out.ppm");
   fileWriter.write();
 
-    return 0;
+  return 0;
 }

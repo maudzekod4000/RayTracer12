@@ -9,6 +9,7 @@ PPMImageWriter::PPMImageWriter(const PPMImage& image): _imageWrapper(image)
 {
 }
 
+__declspec(safebuffers)
 void PPMImageWriter::write(std::ostream& output) const
 {
   // Write the headers first
@@ -20,6 +21,11 @@ void PPMImageWriter::write(std::ostream& output) const
   for (auto& row : _imageWrapper._image) {
     for (auto& color : row) {
       buffer += std::to_string(color.r) + " " + std::to_string(color.g) + " " + std::to_string(color.b) + " ";
+      /*buffer += " ";
+      buffer += std::to_string(color.g);
+      buffer += " ";
+      buffer += std::to_string(color.b);
+      buffer += " ";*/
     }
     buffer += '\n';
   }
