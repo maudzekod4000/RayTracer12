@@ -2,10 +2,11 @@
 #define RAYGEN_H
 
 #include <utils/TypeDefs.h>
+#include "sampling/Camera.h"
 
 struct Raygen {
-  inline Raygen(int32_t wid, int32_t hei, const Vec3& cameraPos, float focalDist):
-    _width(wid), _height(hei), aspRat(static_cast<float>(wid) / hei), cameraPos(cameraPos), focalDist(focalDist) {
+  inline Raygen(int32_t wid, int32_t hei, const Camera& camera, float focalDist):
+    _width(wid), _height(hei), aspRat(static_cast<float>(wid) / hei), camera(camera), focalDist(focalDist) {
 
   }
   /// <summary>
@@ -30,13 +31,13 @@ struct Raygen {
 
     Vec3 rayDir(x, y, focalDist);
 
-    return Ray { cameraPos, glm::normalize(rayDir) };
+    return Ray { camera.pos, camera.pan(rayDir)};
   }
 
   int32_t _width;
   int32_t _height;
   float aspRat;
-  Vec3 cameraPos;
+  const Camera& camera;
   float focalDist;
 };
 

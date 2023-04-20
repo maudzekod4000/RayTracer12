@@ -12,6 +12,7 @@
 #include "src/out/ppm/PPMImageFileWriter.h"
 
 #include "src/sampling/Raygen.h"
+#include "src/sampling/Camera.h"
 
 #include "src/utils/TypeDefs.h"
 
@@ -26,8 +27,9 @@ int main() {
   };
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
-  Vec3 cameraPos{};
-  Raygen s(RENDER_WIDTH, RENDER_HEIGHT, cameraPos, -1);
+
+  Camera camera(Vec3{}, Vec3(0.0f, 1.0f, 0.0f), 30.0f);
+  Raygen s(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
 
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
     for (int32_t col = 0; col < RENDER_WIDTH; col++) {

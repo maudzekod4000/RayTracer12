@@ -18,6 +18,7 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/out/ppm/PPMImageFileWriter.cpp
 
 	${DIR}/src/sampling/Raygen.h
+	${DIR}/src/sampling/Camera.h
 
 	${DIR}/src/utils/TypeDefs.h
 )
