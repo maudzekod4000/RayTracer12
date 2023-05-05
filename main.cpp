@@ -28,7 +28,13 @@ int main() {
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
 
-  Camera camera(Vec3{}, Vec3(0.0f, 1.0f, 0.0f), 30.0f);
+  Camera camera(Vec3{0.0f, 0.0f, 1.0f});
+  camera.dolly(0.3);
+  camera.truck(0.3);
+  camera.pedestal(0.3);
+  camera.pan(10);
+  camera.tilt(10);
+  camera.roll(10);
   Raygen s(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
 
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {

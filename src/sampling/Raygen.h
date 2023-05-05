@@ -31,7 +31,7 @@ struct Raygen {
 
     Vec3 rayDir(x, y, focalDist);
 
-    return Ray { camera.pos, camera.pan(rayDir)};
+    return Ray { camera.pos, camera.applyTransformation(rayDir) };
   }
 
   int32_t _width;

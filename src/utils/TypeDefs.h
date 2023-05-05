@@ -10,7 +10,7 @@ typedef glm::vec2 Point2D;
 typedef glm::vec3 Vec3;
 
 struct Ray {
-  Vec3 origin; // Could be a reference
+  Vec3 origin;
   Vec3 dir;
   float minT = 999999.9f;
 };
