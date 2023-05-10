@@ -18,6 +18,9 @@ struct Ray {
 using namespace glm;
 
 struct Color {
+  inline Color(uint8_t r, uint8_t g, uint8_t b) : Color(Vec3(r, g, b)) {}
+  inline Color(Vec3 vec) : r(vec.x), g(vec.y), b(vec.z) {}
+  inline Color() {}
   uint8_t r;
   uint8_t g;
   uint8_t b;
@@ -43,14 +46,17 @@ struct Triangle {
 
   inline bool intersect(Ray& ray) const {
     Vec3 n = normal();
-    float rayPlane = dot(ray.dir, n);
+    float rayProjectionOnPlaneNormal = dot(ray.dir, n);
 
     /* The ray is perpendicular or facing the back of the triangle */
-    if (rayPlane > 0.0f) {
+    if (rayProjectionOnPlaneNormal > 0.0f) {
       return false;
     }
 
-    float t = glm::dot(this->a - ray.origin, n) / rayPlane;
+    Vec3 rayOriginToPointOnTriangleVec = this->a - ray.origin; \
+      float distanceFromRayOriginToPlane = glm::dot(rayOriginToPointOnTriangleVec, n);
+
+    float t = distanceFromRayOriginToPlane / rayProjectionOnPlaneNormal;
 
     if (t > ray.minT) {
       return false;

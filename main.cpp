@@ -13,28 +13,22 @@
 
 #include "src/sampling/Raygen.h"
 #include "src/sampling/Camera.h"
+#include "src/scene/Scene.h"
 
 #include "src/utils/TypeDefs.h"
 
-const int16_t RENDER_WIDTH = 640;
-const int16_t RENDER_HEIGHT = 480;
 const int16_t MAX_COLOR = 255;
 
 int main() {
-  std::vector<Triangle> triangles = {
-    Triangle(Vec3(-0.5, 1, -3.5), Vec3(0.5, 1, -3.5), Vec3(0, 2, -3.5), Color{0,0,255}),
-    Triangle(Vec3(0, 1, -3.2), Vec3(2, 1, -3.2), Vec3(1, 2, -3.2), Color{255, 0, 0 })
-  };
+  Scene scene("scene3.crtscene");
+  // TODO: Add a validation method that will verify the scene add defaults and print messages if there are missing values.
+  uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
+  uint32_t RENDER_HEIGHT = scene.settings.imageSettings.heigth;
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
 
-  Camera camera(Vec3{0.0f, 0.0f, 1.0f});
-  camera.dolly(0.3);
-  camera.truck(0.3);
-  camera.pedestal(0.3);
-  camera.pan(10);
-  camera.tilt(10);
-  camera.roll(10);
+  // TODO: pass the camera matrix too.
+  Camera camera(scene.camera.position);
   Raygen s(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
 
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
@@ -43,7 +37,7 @@ int main() {
       bool intersects = false;
       Color currentColor;
 
-      for (Triangle& tr : triangles) {
+      for (Triangle& tr : scene.triangles) {
         if (tr.intersect(ray)) {
           currentColor = tr.col;
           intersects = true;
@@ -51,7 +45,7 @@ int main() {
       }
       
       if (!intersects) {
-        image.writePixel(Color{ 0, 255, 0 });
+        image.writePixel(Color(scene.settings.backgroundColor));
       }
       else {
         image.writePixel(currentColor);
