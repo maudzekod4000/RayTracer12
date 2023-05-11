@@ -4,8 +4,8 @@
 #include <utils/TypeDefs.h>
 
 struct Camera {
-  inline Camera(const Vec3& pos) :
-    pos(pos), transformationMatrix(glm::mat4(1.0f)) {
+  inline Camera(const Vec3& pos, const glm::mat3& matrix) :
+    pos(pos), transformationMatrix(glm::mat4(matrix)) {
   }
 
   /*

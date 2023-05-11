@@ -49,13 +49,14 @@ struct Triangle {
     float rayProjectionOnPlaneNormal = dot(ray.dir, n);
 
     /* The ray is perpendicular or facing the back of the triangle */
-    if (rayProjectionOnPlaneNormal > 0.0f) {
+    if (rayProjectionOnPlaneNormal >= 0.0f) {
       return false;
     }
 
-    Vec3 rayOriginToPointOnTriangleVec = this->a - ray.origin; \
-      float distanceFromRayOriginToPlane = glm::dot(rayOriginToPointOnTriangleVec, n);
-
+    Vec3 rayOriginToPointOnTriangleVec = this->a - ray.origin;
+    // This is the projection of the vector to the point in the triangle on the normal.
+    // It is also the distance from the ray origin to the plane.
+    float distanceFromRayOriginToPlane = glm::dot(rayOriginToPointOnTriangleVec, n);
     float t = distanceFromRayOriginToPlane / rayProjectionOnPlaneNormal;
 
     if (t > ray.minT) {
