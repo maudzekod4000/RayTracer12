@@ -5,7 +5,7 @@ PPMImage::PPMImage(const PPMImageMeta& metadata): _metadata(metadata), _currentR
   _image.reserve(metadata._imgHeight);
 }
 
-void PPMImage::writePixel(const Color& color)
+void PPMImage::writePixel(const PPMColor& color)
 {
   if (_image.empty()) {
     _image.push_back({});

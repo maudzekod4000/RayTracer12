@@ -34,6 +34,7 @@ struct Scene {
   Settings settings;
   Camera camera;
   std::vector<Triangle> triangles;
+  std::vector<Light> lights;
 private:
   void parseSceneFile(std::string_view sceneFileName) {
     std::ifstream ifs(sceneFileName.data());
@@ -97,10 +98,10 @@ private:
       if (!lightsVal.IsNull() && lightsVal.IsArray()) {
         GenericArray lightsArr = lightsVal.GetArray();
 
-        /*for (SizeType i = 0; i < lightsArr.Size(); i++) {
-          CRTLight light = CRTLight();
+        for (SizeType i = 0; i < lightsArr.Size(); i++) {
+          Light light;
 
-          const Value& lightVal = lightsArr[i].GetObject();
+          const auto& lightVal = lightsArr[i].GetObject();
           const Value& intensityVal = lightVal.FindMember("intensity")->value;
           light.intensity = intensityVal.GetFloat();
 
@@ -108,12 +109,12 @@ private:
           if (!positionVal.IsNull() && positionVal.IsArray()) {
             GenericArray positionArr = positionVal.GetArray();
             if (positionArr.Size() == 3) {
-              light.position = CRTVector(positionArr[0].GetFloat(), positionArr[1].GetFloat(), positionArr[2].GetFloat());
+              light.pos = Vec3(positionArr[0].GetFloat(), positionArr[1].GetFloat(), positionArr[2].GetFloat());
             }
           }
 
           lights.push_back(light);
-        }*/
+        }
       }
 
       const Value& objectsVal = doc.FindMember("objects")->value;
@@ -145,8 +146,7 @@ private:
                     vertices.push_back(Vec3(x, y, z));
                   }
 
-                  Color col = Color{ static_cast<uint8_t>(rand() % 255 + 1), static_cast<uint8_t>(rand() % 255 + 1),
-                    static_cast<uint8_t>(rand() % 255 + 1) };
+                  InternalColor col = InternalColor{};
                   Triangle t = Triangle(vertices[0], vertices[1], vertices[2], col);
                   
                   triangles.push_back(t);

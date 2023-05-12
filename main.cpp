@@ -17,11 +17,9 @@
 
 #include "src/utils/TypeDefs.h"
 
-const int16_t MAX_COLOR = 255;
-
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene1.crtscene");
+  Scene scene("scene0.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -30,28 +28,31 @@ int main() {
   PPMImage image(imageMetadata);
 
   Camera camera(scene.camera.position, scene.camera.matrix);
-  Raygen s(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
+  Raygen rayGenerator(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
+  PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
+  LightOptions lightOptions{ 0.001f, 0.3f };
+  Lighting lighting(lightOptions, scene.lights, scene.triangles);
 
   std::cout << "Rendering..." << '\n';
 
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
     for (int32_t col = 0; col < RENDER_WIDTH; col++) {
-      Ray& ray = s.gen(col, row);
-      bool intersects = false;
-      Color currentColor;
+      Ray& ray = rayGenerator.gen(col, row);
+      InternalColor currentColor{};
+      IntersectionData intersectionData{};
 
       for (Triangle& tr : scene.triangles) {
-        if (tr.intersect(ray)) {
+        if (tr.intersect(ray, intersectionData)) {
           currentColor = tr.col;
-          intersects = true;
         }
       }
-      
-      if (!intersects) {
-        image.writePixel(Color(scene.settings.backgroundColor));
+
+      if (!intersectionData.intersection) {
+        image.writePixel(backGroundColor);
       }
       else {
-        image.writePixel(currentColor);
+        currentColor += lighting.light(intersectionData);
+        image.writePixel(PPMColor::from(currentColor));
       }
     }
   }
