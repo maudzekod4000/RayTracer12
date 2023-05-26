@@ -33,8 +33,17 @@ struct PPMColor {
   uint8_t b;
 
   inline static PPMColor from(const InternalColor& color) {
-    return PPMColor(static_cast<uint8_t>(color.r * MAX_COLOR), static_cast<uint8_t>(color.g * MAX_COLOR),
-      static_cast<uint8_t>(color.b * MAX_COLOR));
+    float r = glm::clamp(color.r, 0.0f, 1.0f);
+    float g = glm::clamp(color.g, 0.0f, 1.0f);
+    float b = glm::clamp(color.b, 0.0f, 1.0f);
+    /*float r = color.r;
+    float g = color.g;
+    float b = color.b;*/
+    uint8_t red = static_cast<uint8_t>(r * MAX_COLOR);
+    uint8_t green = static_cast<uint8_t>(g * MAX_COLOR);
+    uint8_t blue = static_cast<uint8_t>(b * MAX_COLOR);
+    return PPMColor(static_cast<uint8_t>(r * MAX_COLOR), static_cast<uint8_t>(g * MAX_COLOR),
+      static_cast<uint8_t>(b * MAX_COLOR));
   }
 };
 
@@ -76,12 +85,13 @@ struct Triangle {
 
   inline bool intersect(Ray& ray, IntersectionData& intersectionData) const {
     Vec3 n = normal();
+
     float rayProjectionOnPlaneNormal = dot(ray.dir, n);
 
-    /* The ray is perpendicular or facing the back of the triangle */
-    /*if (rayProjectionOnPlaneNormal >= 0.0f) {
-      return false;
-    }*/
+    /* The ray is perpendicular we have no work */
+    if (rayProjectionOnPlaneNormal == 0.0f) {
+      return false; 
+    }
 
     Vec3 rayOriginToPointOnTriangleVec = this->a - ray.origin;
     // This is the projection of the vector to the point in the triangle on the normal.
@@ -89,16 +99,15 @@ struct Triangle {
     float distanceFromRayOriginToPlane = glm::dot(rayOriginToPointOnTriangleVec, n);
     float t = distanceFromRayOriginToPlane / rayProjectionOnPlaneNormal;
 
-    if (t > intersectionData.t) {
+    if (t > intersectionData.t || t <= 0) {
       return false;
     }
 
     Vec3 p = ray.origin + t * ray.dir;
-    float e = 0.0001f;
 
-    if (dot(n, cross(b - a, p - a)) - e <= 0.0f ||
-      dot(n, cross(c - b, p - b)) - e <= 0.0f ||
-      dot(n, cross(a - c, p - c)) - e <= 0.0f) {
+    if (dot(n, cross(b - a, p - a)) < 0.0f ||
+      dot(n, cross(c - b, p - b)) < 0.0f ||
+      dot(n, cross(a - c, p - c)) < 0.0f) {
       return false;
     }
 
@@ -124,10 +133,10 @@ struct Lighting {
       lightDir = glm::normalize(lightDir);
       float cosineLaw = glm::max(0.0f, glm::dot(lightDir, intersectionData.pN));
       float lightSphereArea = 4 * M_PI * lightSphereRadius * lightSphereRadius;
-      Ray shadowRay{ intersectionData.p + intersectionData.pN * options.shadowBias, lightDir };
+      Ray shadowRay{ intersectionData.p + (intersectionData.pN * options.shadowBias), lightDir};
 
       bool intersects = false;
-      IntersectionData intrData;
+      IntersectionData intrData{};
 
       for (const auto& triangle : triangles) {
         if (triangle.intersect(shadowRay, intrData)) {
@@ -136,8 +145,8 @@ struct Lighting {
         }
       }
 
-      if (intersects) {
-        float color = (light.intensity / (lightSphereArea * options.albedo * cosineLaw)) / (light.intensity / 2);
+      if (!intersects) {
+        float color = (light.intensity / (lightSphereArea * options.albedo * cosineLaw));
         lightContributionColor += InternalColor(color);
       }
     }
