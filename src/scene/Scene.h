@@ -90,6 +90,8 @@ private:
               Vec3 v = Vec3(matrixArr[i].GetFloat(), matrixArr[i + 3].GetFloat(), matrixArr[i + 6].GetFloat());
               camera.matrix[i] = v;
             }
+
+            camera.matrix = glm::transpose(camera.matrix);
           }
         }
       }

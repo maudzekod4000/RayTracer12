@@ -19,7 +19,7 @@
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene1.crtscene");
+  Scene scene("scene3.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;

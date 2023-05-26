@@ -146,7 +146,7 @@ struct Lighting {
       }
 
       if (!intersects) {
-        float color = (light.intensity / (lightSphereArea * options.albedo * cosineLaw));
+        float color = light.intensity / lightSphereArea * options.albedo * cosineLaw;
         lightContributionColor += InternalColor(color);
       }
     }
