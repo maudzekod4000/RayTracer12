@@ -19,7 +19,7 @@
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene3.crtscene");
+  Scene scene("scene0.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -43,7 +43,10 @@ int main() {
 
       for (Triangle& tr : scene.triangles) {
         if (tr.intersect(ray, intersectionData)) {
-          currentColor = tr.col;
+          // Make a color from barycentric coordinates
+          currentColor = InternalColor(intersectionData.hitBaryCentricCoordinates.x,
+            intersectionData.hitBaryCentricCoordinates.y,
+            intersectionData.hitBaryCentricCoordinates.z);
         }
       }
 

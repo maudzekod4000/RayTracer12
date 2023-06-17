@@ -5,6 +5,7 @@
 #include <string_view>
 #include <fstream>
 #include <vector>
+#include <unordered_map>
 
 #include "rapidjson/istreamwrapper.h"
 #include "rapidjson/document.h"
@@ -19,6 +20,17 @@ struct ImageSettings {
 struct Settings {
   Vec3 backgroundColor;
   ImageSettings imageSettings;
+};
+
+struct TempTriangle {
+  Vec3 a;
+  Vec3 b;
+  Vec3 c;
+  int vertices[3];
+
+  inline Vec3 normal() const {
+    return glm::normalize(glm::cross(b - a, c - a));
+  }
 };
 
 struct Scene {
@@ -124,8 +136,19 @@ private:
         GenericArray objectsArr = objectsVal.GetArray();
         for (SizeType i = 0; i < objectsArr.Size(); i++) {
           const Value& verticesVal = objectsArr[i].FindMember("vertices")->value;
+          std::vector<Vertex> vertices;
+          std::unordered_map<int, std::vector<TempTriangle*>> vertexIndxToTriangles;
+          std::vector<TempTriangle*> tempTriangles;
+
           if (!verticesVal.IsNull() && verticesVal.IsArray()) {
             GenericArray verticesArr = verticesVal.GetArray();
+
+            for (SizeType i = 0; i < verticesArr.Size(); i+=3) {
+              Vec3 pos(verticesArr[i].GetFloat(), verticesArr[i + 1].GetFloat(), verticesArr[i + 2].GetFloat());
+              Vec3 smoothNormal{};
+              Vertex v{ pos, smoothNormal };
+              vertices.push_back(v);
+            }
 
             const Value& trianglesVal = objectsArr[i].FindMember("triangles")->value;
             if (!trianglesVal.IsNull() && trianglesVal.IsArray()) {
@@ -136,26 +159,60 @@ private:
               for (SizeType i = 0; i < trianglesArr.Size(); i++) {
                 vArr[vIndex] = trianglesArr[i].GetInt();
                 vIndex++;
+                TempTriangle* tempTri = new TempTriangle;
 
                 if (vIndex == 3) {
                   vIndex = 0;
                   std::vector<Vec3> vertices;
                   for (SizeType i = 0; i < 3; i++) {
                     int index = vArr[i] * 3;
+                    tempTri->vertices[i] = vArr[i];
                     float x = verticesArr[index].GetFloat();
                     float y = verticesArr[index + 1].GetFloat();
                     float z = verticesArr[index + 2].GetFloat();
                     vertices.push_back(Vec3(x, y, z));
                   }
 
-                  InternalColor col = InternalColor{};
-                  Triangle t = Triangle(vertices[0], vertices[1], vertices[2], col);
+                  int indexInVerticesArr = trianglesArr[i].GetInt();
                   
-                  triangles.push_back(t);
+                  tempTri->a = vertices[0];
+                  tempTri->b = vertices[1];
+                  tempTri->c = vertices[2];
+                  tempTriangles.push_back(tempTri);
+
+                  vertexIndxToTriangles[vArr[0]].push_back(tempTri);
+                  vertexIndxToTriangles[vArr[1]].push_back(tempTri);
+                  vertexIndxToTriangles[vArr[2]].push_back(tempTri);
                 }
               }
             }
           }
+
+          // Here we should calculate the smooth normals and create the final triangles
+          for (const auto& [vertexId, triangles] : vertexIndxToTriangles) {
+            Vertex& vert = vertices[vertexId];
+            Vec3 smoothNormal{};
+
+            for (TempTriangle* tri : triangles) {
+              Vec3 n = tri->normal();
+              smoothNormal += n;
+            }
+
+            vert.smoothNormal = glm::normalize(smoothNormal);
+          }
+
+          // Create the final triangle collection and delete all other data.
+          for (TempTriangle* tri : tempTriangles) {
+            InternalColor col{};
+            Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]], col);
+            triangles.push_back(renderingTriangle);
+          }
+
+          for (TempTriangle* tempTri : tempTriangles) {
+            delete tempTri;
+          }
+          vertices.clear();
+          vertexIndxToTriangles.clear();
         }
       }
     }

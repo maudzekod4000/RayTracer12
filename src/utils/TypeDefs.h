@@ -61,26 +61,32 @@ struct LightOptions {
 struct IntersectionData {
   Vec3 p;
   Vec3 pN;
+  Vec3 hitBaryCentricCoordinates;
   float t = 9999.9f;
   bool intersection;
 };
 
+struct Vertex {
+  Vec3 pos{};
+  Vec3 smoothNormal{};
+};
+
 struct Triangle {
-  inline Triangle(const Vec3& a, const Vec3& b, const Vec3& c, const InternalColor& col): a(a), b(b), c(c), col(
+  inline Triangle(const Vertex& a, const Vertex& b, const Vertex& c, const InternalColor& col): a(a), b(b), c(c), col(
     col
   ) {}
-  Vec3 a;
-  Vec3 b;
-  Vec3 c;
+  Vertex a;
+  Vertex b;
+  Vertex c;
   InternalColor col;
 
   inline float area() const {
-    return glm::length(glm::cross(b - a, c - a)) / 2.0f;
+    return glm::length(glm::cross(b.pos - a.pos, c.pos - a.pos)) / 2.0f;
   }
 
   /* Calculates and returns the normal. It is intentional that it is not stored as a field of the struct. */
   inline Vec3 normal() const {
-    return glm::normalize(glm::cross(b - a, c - a));
+    return glm::normalize(glm::cross(b.pos - a.pos, c.pos - a.pos));
   }
 
   inline bool intersect(Ray& ray, IntersectionData& intersectionData) const {
@@ -93,7 +99,7 @@ struct Triangle {
       return false; 
     }
 
-    Vec3 rayOriginToPointOnTriangleVec = this->a - ray.origin;
+    Vec3 rayOriginToPointOnTriangleVec = this->a.pos - ray.origin;
     // This is the projection of the vector to the point in the triangle on the normal.
     // It is also the distance from the ray origin to the plane.
     float distanceFromRayOriginToPlane = glm::dot(rayOriginToPointOnTriangleVec, n);
@@ -105,16 +111,26 @@ struct Triangle {
 
     Vec3 p = ray.origin + t * ray.dir;
 
-    if (dot(n, cross(b - a, p - a)) < 0.0f ||
-      dot(n, cross(c - b, p - b)) < 0.0f ||
-      dot(n, cross(a - c, p - c)) < 0.0f) {
+    if (dot(n, cross(b.pos - a.pos, p - a.pos)) < 0.0f ||
+      dot(n, cross(c.pos - b.pos, p - b.pos)) < 0.0f ||
+      dot(n, cross(a.pos - c.pos, p - c.pos)) < 0.0f) {
       return false;
     }
 
     intersectionData.t = t;
     intersectionData.p = p;
     intersectionData.intersection = true;
-    intersectionData.pN = n;
+
+    // Calculate barycentric coordinates of the hit and set the hit normal
+    float areaM = glm::length(glm::cross(p - a.pos, c.pos - a.pos)) / 2;
+    float areaN = glm::length(glm::cross(b.pos - a.pos, p - a.pos)) / 2;
+    float areaTri = glm::length(glm::cross(b.pos - a.pos, c.pos - a.pos)) / 2;
+
+    float u = areaM / areaTri;
+    float v = areaN / areaTri;
+    float w = 1 - u - v;
+    intersectionData.hitBaryCentricCoordinates = Vec3(u, v, 1 - u - v);
+    intersectionData.pN = b.smoothNormal * u + c.smoothNormal * v + a.smoothNormal * w;
 
     return true;
   }
