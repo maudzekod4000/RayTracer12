@@ -16,10 +16,11 @@
 #include "src/scene/Scene.h"
 
 #include "src/utils/TypeDefs.h"
+#include "src/sampling/Shaders.h"
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene0.crtscene");
+  Scene scene("scene3.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -31,7 +32,7 @@ int main() {
   Raygen rayGenerator(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
   PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
   LightOptions lightOptions{ 0.01f, 0.5f };
-  Lighting lighting(lightOptions, scene.lights, scene.triangles);
+  Lighting lighting(lightOptions, scene.lights, scene.objects);
 
   std::cout << "Rendering..." << '\n';
 
@@ -41,12 +42,13 @@ int main() {
       InternalColor currentColor{};
       IntersectionData intersectionData{};
 
-      for (Triangle& tr : scene.triangles) {
-        if (tr.intersect(ray, intersectionData)) {
-          // Make a color from barycentric coordinates
-          currentColor = InternalColor(intersectionData.hitBaryCentricCoordinates.x,
-            intersectionData.hitBaryCentricCoordinates.y,
-            intersectionData.hitBaryCentricCoordinates.z);
+      for (Object& obj : scene.objects) {
+        for (Triangle& tr : obj.triangles) {
+          if (tr.intersect(ray, intersectionData)) {
+            if (obj.mat.type == "diffuse") {
+              currentColor = shadeDiffuse(obj.mat);
+            }
+          }
         }
       }
 

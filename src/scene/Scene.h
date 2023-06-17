@@ -45,8 +45,9 @@ struct Scene {
 
   Settings settings;
   Camera camera;
-  std::vector<Triangle> triangles;
+  std::vector<Object> objects;
   std::vector<Light> lights;
+  std::vector<Material> materials;
 private:
   void parseSceneFile(std::string_view sceneFileName) {
     std::ifstream ifs(sceneFileName.data());
@@ -131,6 +132,29 @@ private:
         }
       }
 
+      const Value& materialsVal = doc.FindMember("materials")->value;
+      if (!materialsVal.IsNull()) {
+        GenericArray materialsArr = materialsVal.GetArray();
+
+        for (SizeType i = 0; i < materialsArr.Size(); i++) {
+          Material mat;
+
+          const auto& materialVal = materialsArr[i].GetObject();
+          const Value& typeVal = materialVal.FindMember("type")->value;
+          mat.type = typeVal.GetString();
+
+          const Value& albedoVal = materialVal.FindMember("albedo")->value;
+          GenericArray albedoArr = albedoVal.GetArray();
+          Vec3 albedo{albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat()};
+          mat.albedo = albedo;
+
+          const Value& smoothShadingVal = materialVal.FindMember("smooth_shading")->value;
+          mat.smoothShading = smoothShadingVal.GetBool();
+
+          materials.push_back(mat);
+        }
+      }
+
       const Value& objectsVal = doc.FindMember("objects")->value;
       if (!objectsVal.IsNull() && objectsVal.IsArray()) {
         GenericArray objectsArr = objectsVal.GetArray();
@@ -139,6 +163,11 @@ private:
           std::vector<Vertex> vertices;
           std::unordered_map<int, std::vector<TempTriangle*>> vertexIndxToTriangles;
           std::vector<TempTriangle*> tempTriangles;
+          Object currentObject;
+
+          const Value& materialIdxVal = objectsArr[i].FindMember("material_index")->value;
+          int materialIdx = materialIdxVal.GetInt();
+          currentObject.mat = materials[materialIdx];
 
           if (!verticesVal.IsNull() && verticesVal.IsArray()) {
             GenericArray verticesArr = verticesVal.GetArray();
@@ -205,12 +234,15 @@ private:
           for (TempTriangle* tri : tempTriangles) {
             InternalColor col{};
             Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]], col);
-            triangles.push_back(renderingTriangle);
+            currentObject.triangles.push_back(renderingTriangle);
           }
+
+          objects.push_back(currentObject);
 
           for (TempTriangle* tempTri : tempTriangles) {
             delete tempTri;
           }
+          tempTriangles.clear();
           vertices.clear();
           vertexIndxToTriangles.clear();
         }

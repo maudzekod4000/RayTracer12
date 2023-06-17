@@ -129,16 +129,27 @@ struct Triangle {
     float u = areaM / areaTri;
     float v = areaN / areaTri;
     float w = 1 - u - v;
-    intersectionData.hitBaryCentricCoordinates = Vec3(u, v, 1 - u - v);
+    intersectionData.hitBaryCentricCoordinates = Vec3(1 - u - v, u, v);
     intersectionData.pN = b.smoothNormal * u + c.smoothNormal * v + a.smoothNormal * w;
 
     return true;
   }
 };
 
+struct Material {
+  std::string type;
+  Vec3 albedo;
+  bool smoothShading;
+};
+
+struct Object {
+  std::vector<Triangle> triangles;
+  Material mat;
+};
+
 struct Lighting {
-  inline Lighting(LightOptions& opts, const std::vector<Light>& lights, const std::vector<Triangle>& triangles) :
-    options(opts), lights(lights), triangles(triangles) {}
+  inline Lighting(LightOptions& opts, const std::vector<Light>& lights, const std::vector<Object>& objects) :
+    options(opts), lights(lights), objects(objects) {}
 
   inline InternalColor light(const IntersectionData& intersectionData) {
     InternalColor lightContributionColor{};
@@ -154,10 +165,12 @@ struct Lighting {
       bool intersects = false;
       IntersectionData intrData{};
 
-      for (const auto& triangle : triangles) {
-        if (triangle.intersect(shadowRay, intrData)) {
-          intersects = true;
-          break;
+      for (Object& obj : objects) {
+        for (const auto& triangle : obj.triangles) {
+          if (triangle.intersect(shadowRay, intrData)) {
+            intersects = true;
+            break;
+          }
         }
       }
 
@@ -172,7 +185,7 @@ struct Lighting {
 
   LightOptions options;
   std::vector<Light> lights;
-  std::vector<Triangle> triangles;
+  std::vector<Object> objects;
 };
 
 #endif // !TYPE_DEFS_H
