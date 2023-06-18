@@ -27,8 +27,7 @@ InternalColor shadeReflect(Ray reflectionRay, Material material, IntersectionDat
     for (Triangle& tr : obj.triangles) {
       if (tr.intersect(reflectionRay, intersectionData)) {
         if (obj.mat.type == "reflective") {
-          Ray newReflectionRay{intrsData.p, glm::reflect(reflectionRay.dir, intersectionData.pN ) +
-            (intersectionData.pN * 0.01f), 0 };
+          Ray newReflectionRay{intrsData.p + (intersectionData.pN * 0.01f), glm::reflect(reflectionRay.dir, intersectionData.pN ), 0 };
           return shadeReflect(newReflectionRay, obj.mat, intersectionData, depth + 1, objects, lights, backgroundColor);
         }
         else {

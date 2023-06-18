@@ -49,8 +49,7 @@ int main() {
               currentColor = shadeDiffuse(obj.mat);
             }
             else if (obj.mat.type == "reflective") {
-              Ray newReflectionRay{ intersectionData.p, glm::reflect(ray.dir, intersectionData.pN) +
-            (intersectionData.pN * 0.01f), 0 };
+              Ray newReflectionRay{ intersectionData.p + (intersectionData.pN * 0.01f), glm::reflect(ray.dir, intersectionData.pN), 0 };
               currentColor = shadeReflect(newReflectionRay, obj.mat, intersectionData, 0, scene.objects, lighting, scene.settings.backgroundColor);
             }
           }
