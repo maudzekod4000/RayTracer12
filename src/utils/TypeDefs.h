@@ -21,6 +21,7 @@ typedef glm::vec3 InternalColor;
 struct Ray {
   Vec3 origin;
   Vec3 dir;
+  int depth{};
 };
 
 using namespace glm;
