@@ -133,7 +133,7 @@ private:
       }
 
       const Value& materialsVal = doc.FindMember("materials")->value;
-      if (!materialsVal.IsNull()) {
+      if (!materialsVal.IsNull() && materialsVal.IsArray()) {
         GenericArray materialsArr = materialsVal.GetArray();
 
         for (SizeType i = 0; i < materialsArr.Size(); i++) {
@@ -143,13 +143,20 @@ private:
           const Value& typeVal = materialVal.FindMember("type")->value;
           mat.type = typeVal.GetString();
 
-          const Value& albedoVal = materialVal.FindMember("albedo")->value;
-          GenericArray albedoArr = albedoVal.GetArray();
-          Vec3 albedo{albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat()};
-          mat.albedo = albedo;
+          if (mat.type != "refractive") {
+            const Value& albedoVal = materialVal.FindMember("albedo")->value;
+            GenericArray albedoArr = albedoVal.GetArray();
+            Vec3 albedo{ albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat() };
+            mat.albedo = albedo;
+          }
 
           const Value& smoothShadingVal = materialVal.FindMember("smooth_shading")->value;
           mat.smoothShading = smoothShadingVal.GetBool();
+
+          if (mat.type == "refractive") {
+            const Value& iorVal = materialVal.FindMember("ior")->value;
+            mat.ior = iorVal.GetFloat();
+          }
 
           materials.push_back(mat);
         }
@@ -166,9 +173,11 @@ private:
           Object currentObject;
 
           const Value& materialIdxVal = objectsArr[i].FindMember("material_index")->value;
-          int materialIdx = materialIdxVal.GetInt();
-          currentObject.mat = materials[materialIdx];
 
+          if (!materialIdxVal.IsNull() && materialIdxVal.IsInt()) {
+            int materialIdx = materialIdxVal.GetInt();
+            currentObject.mat = materials[materialIdx];
+          }
           if (!verticesVal.IsNull() && verticesVal.IsArray()) {
             GenericArray verticesArr = verticesVal.GetArray();
 

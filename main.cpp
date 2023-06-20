@@ -20,7 +20,7 @@
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene4.crtscene");
+  Scene scene("scene0.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -51,6 +51,9 @@ int main() {
             else if (obj.mat.type == "reflective") {
               Ray newReflectionRay{ intersectionData.p + (intersectionData.pN * 0.01f), glm::reflect(ray.dir, intersectionData.pN), 0 };
               currentColor = shadeReflect(newReflectionRay, obj.mat, intersectionData, 0, scene.objects, lighting, scene.settings.backgroundColor);
+            }
+            else if (obj.mat.type == "refractive") {
+              currentColor = shadeReflect(ray, obj.mat, intersectionData, 0, scene.objects, lighting, scene.settings.backgroundColor);
             }
           }
         }

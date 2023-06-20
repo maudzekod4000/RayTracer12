@@ -63,6 +63,7 @@ struct IntersectionData {
   Vec3 p;
   Vec3 pN;
   Vec3 hitBaryCentricCoordinates;
+  Vec3 pNNonSmooth;
   float t = 9999.9f;
   bool intersection;
 };
@@ -132,6 +133,7 @@ struct Triangle {
     float w = 1 - u - v;
     intersectionData.hitBaryCentricCoordinates = Vec3(1 - u - v, u, v);
     intersectionData.pN = b.smoothNormal * u + c.smoothNormal * v + a.smoothNormal * w;
+    intersectionData.pNNonSmooth = n;
 
     return true;
   }
@@ -141,6 +143,7 @@ struct Material {
   std::string type;
   Vec3 albedo;
   bool smoothShading;
+  float ior{};
 };
 
 struct Object {
@@ -159,7 +162,9 @@ struct Lighting {
       Vec3 lightDir = light.pos - intersectionData.p;
       float lightSphereRadius = glm::length(lightDir);
       lightDir = glm::normalize(lightDir);
-      float cosineLaw = glm::max(0.0f, glm::dot(lightDir, intersectionData.pN));
+      float angle = glm::dot(intersectionData.pN, lightDir);
+
+      float cosineLaw = glm::max(0.0f, angle);
       float lightSphereArea = 4 * M_PI * lightSphereRadius * lightSphereRadius;
       Ray shadowRay{ intersectionData.p + (intersectionData.pN * options.shadowBias), lightDir};
 
@@ -169,8 +174,10 @@ struct Lighting {
       for (Object& obj : objects) {
         for (const auto& triangle : obj.triangles) {
           if (triangle.intersect(shadowRay, intrData)) {
-            intersects = true;
-            break;
+            if (intrData.t < lightSphereRadius) {
+              intersects = true;
+              break;
+            }
           }
         }
       }
