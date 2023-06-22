@@ -32,6 +32,8 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/utils/TypeDefs.h
 
 	${DIR}/src/scene/Scene.h
+
+	${DIR}/src/optimisations/ThreadPool.h
 )
 
 add_dependencies(${PROJECT_NAME} rapidjson)
