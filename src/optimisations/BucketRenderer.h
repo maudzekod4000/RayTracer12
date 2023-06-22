@@ -23,9 +23,26 @@ struct BucketRenderer {
 
   void render() {
     while (true) {
-      std::lock_guard<std::mutex> bucketGuard(bucketMutex);
+      bucketMutex.lock();
+      if (buckets.empty()) {
+        bucketMutex.unlock();
+        break;
+      }
+      Bucket bucket = buckets.top();
+      buckets.pop();
+      bucketMutex.unlock();
 
+      auto renderJob = [bucket, this]() {
+        for (int32_t row = bucket.y; row < bucket.y + bucketSize; row++) {
+          for (int32_t col = bucket.x; col < bucket.x + bucketSize; col++) {
+            Ray ray = rayGen.gen(col, row);
+            imageBuffer.writePixel(row, col, PPMColor::from(tracer.trace(ray, 0)));
+          }
+        }
+      };
+      threadPool.doJob(renderJob);
     }
+    threadPool.stop();
   }
 private:
   ThreadPool threadPool;

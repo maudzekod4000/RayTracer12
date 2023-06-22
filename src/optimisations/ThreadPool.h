@@ -20,13 +20,18 @@ struct ThreadPool {
     std::lock_guard<std::mutex> jobQueueGuard(jobsMutex);
     jobQueue.push_back(job);
   }
+
+  inline void stop() {
+    working = false;
+  }
 private:
   std::mutex jobsMutex;
   std::deque<std::function<void()>> jobQueue;
   std::vector<std::thread> workers;
+  bool working = true;
 
   void waitForWork() {
-    while (true) {
+    while (working) {
       std::lock_guard<std::mutex> jobQueueGuard(jobsMutex);
       if (jobQueue.empty()) { continue; }
       auto job = jobQueue.front();

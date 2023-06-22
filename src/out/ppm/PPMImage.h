@@ -16,7 +16,7 @@ public:
   friend class PPMImageWriter;
   PPMImage(const PPMImageMeta& metadata);
 
-  void writePixel(const PPMColor& color);
+  void writePixel(int32_t row, int32_t col, const PPMColor& color);
 protected:
   std::vector<std::vector<PPMColor>> _image;
   const PPMImageMeta& _metadata;

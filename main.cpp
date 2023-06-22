@@ -42,12 +42,7 @@ int main() {
   std::cout << "Rendering..." << '\n';
   auto start = std::chrono::steady_clock::now();
 
-  for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
-    for (int32_t col = 0; col < RENDER_WIDTH; col++) {
-      Ray& ray = rayGenerator.gen(col, row);
-      image.writePixel(PPMColor::from(tracer.trace(ray, 0)));
-    }
-  }
+  bucketRenderer.render();
 
   auto end = std::chrono::steady_clock::now();
   std::chrono::duration<double> elapsedSeconds = end - start;
