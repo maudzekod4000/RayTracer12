@@ -19,6 +19,7 @@
 #include "src/utils/TypeDefs.h"
 #include "sampling/Tracer.h"
 #include "optimisations/ThreadPool.h"
+#include "optimisations/BucketRenderer.h"
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
@@ -36,13 +37,7 @@ int main() {
   LightOptions lightOptions{ 0.01f, 0.5f };
   Lighting lighting(lightOptions, scene.lights, scene.objects);
   Tracer tracer(scene, lighting);
-  ThreadPool threadPool;
-
-  threadPool.start();
-  auto work = [&scene]() {
-    std::cout << scene.settings.imageSettings.width << std::endl;
-  };
-  threadPool.doJob(work);
+  BucketRenderer bucketRenderer(rayGenerator, tracer, scene, image);
 
   std::cout << "Rendering..." << '\n';
   auto start = std::chrono::steady_clock::now();
