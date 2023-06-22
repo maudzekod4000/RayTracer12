@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "PPMImageMeta.h"
+#include "PPMColor.h"
 #include "utils/TypeDefs.h"
 
 /// <summary>

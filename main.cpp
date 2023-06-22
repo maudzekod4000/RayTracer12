@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <fstream>
 #include <string>
+#include <chrono>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -14,17 +15,17 @@
 #include "src/sampling/Raygen.h"
 #include "src/sampling/Camera.h"
 #include "src/scene/Scene.h"
-
+#include "out/ppm/PPMColor.h"
 #include "src/utils/TypeDefs.h"
-#include "src/sampling/Shaders.h"
+#include "sampling/Tracer.h"
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("scene0.crtscene");
+  Scene scene("reflscene4.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
-  uint32_t RENDER_WIDTH = scene.settings.imageSettings.width;
-  uint32_t RENDER_HEIGHT = scene.settings.imageSettings.heigth;
+  int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
+  int32_t RENDER_HEIGHT = scene.settings.imageSettings.heigth;
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
 
@@ -33,41 +34,21 @@ int main() {
   PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
   LightOptions lightOptions{ 0.01f, 0.5f };
   Lighting lighting(lightOptions, scene.lights, scene.objects);
+  Tracer tracer(scene, lighting);
 
   std::cout << "Rendering..." << '\n';
+  auto start = std::chrono::steady_clock::now();
 
   for (int32_t row = 0; row < RENDER_HEIGHT; row++) {
     for (int32_t col = 0; col < RENDER_WIDTH; col++) {
       Ray& ray = rayGenerator.gen(col, row);
-      InternalColor currentColor{};
-      IntersectionData intersectionData{};
-
-      for (Object& obj : scene.objects) {
-        for (Triangle& tr : obj.triangles) {
-          if (tr.intersect(ray, intersectionData)) {
-            if (obj.mat.type == "diffuse") {
-              currentColor = shadeDiffuse(obj.mat);
-            }
-            else if (obj.mat.type == "reflective") {
-              Ray newReflectionRay{ intersectionData.p + (intersectionData.pN * 0.01f), glm::reflect(ray.dir, intersectionData.pN), 0 };
-              currentColor = shadeReflect(newReflectionRay, obj.mat, intersectionData, 0, scene.objects, lighting, scene.settings.backgroundColor);
-            }
-            else if (obj.mat.type == "refractive") {
-              currentColor = shadeReflect(ray, obj.mat, intersectionData, 0, scene.objects, lighting, scene.settings.backgroundColor);
-            }
-          }
-        }
-      }
-
-      if (!intersectionData.intersection) {
-        image.writePixel(backGroundColor);
-      }
-      else {
-        currentColor += lighting.light(intersectionData);
-        image.writePixel(PPMColor::from(currentColor));
-      }
+      image.writePixel(PPMColor::from(tracer.trace(ray, 0)));
     }
   }
+
+  auto end = std::chrono::steady_clock::now();
+  std::chrono::duration<double> elapsedSeconds = end - start;
+  std::cout << "Rendering took " << elapsedSeconds.count() << " sec." << '\n';
 
   PPMImageFileWriter fileWriter(image, "out.ppm");
   fileWriter.write();

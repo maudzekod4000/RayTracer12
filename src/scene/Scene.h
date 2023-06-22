@@ -11,6 +11,10 @@
 #include "rapidjson/document.h"
 
 #include "utils/TypeDefs.h"
+#include "sampling/Object.h"
+#include "sampling/Material.h"
+#include "sampling/Triangle.h"
+#include "sampling/Lighting.h"
 
 struct ImageSettings {
   int32_t width;
@@ -241,8 +245,7 @@ private:
 
           // Create the final triangle collection and delete all other data.
           for (TempTriangle* tri : tempTriangles) {
-            InternalColor col{};
-            Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]], col);
+            Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]]);
             currentObject.triangles.push_back(renderingTriangle);
           }
 

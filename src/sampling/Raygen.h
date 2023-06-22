@@ -3,6 +3,7 @@
 
 #include <utils/TypeDefs.h>
 #include "sampling/Camera.h"
+#include "sampling/Ray.h"
 
 struct Raygen {
   inline Raygen(int32_t wid, int32_t hei, const Camera& camera, float focalDist):

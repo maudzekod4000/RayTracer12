@@ -17,9 +17,17 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/out/ppm/PPMImageWriter.cpp
 	${DIR}/src/out/ppm/PPMImageFileWriter.h
 	${DIR}/src/out/ppm/PPMImageFileWriter.cpp
+	${DIR}/src/out/ppm/PPMColor.h
 
 	${DIR}/src/sampling/Raygen.h
 	${DIR}/src/sampling/Camera.h
+	${DIR}/src/sampling/Ray.h
+	${DIR}/src/sampling/Lighting.h
+	${DIR}/src/sampling/Triangle.h
+	${DIR}/src/sampling/IntersectionData.h
+	${DIR}/src/sampling/Vertex.h
+	${DIR}/src/sampling/Material.h
+	${DIR}/src/sampling/Object.h
 
 	${DIR}/src/utils/TypeDefs.h
 
