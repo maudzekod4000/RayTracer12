@@ -20,6 +20,7 @@
 #include "sampling/Tracer.h"
 #include "optimisations/ThreadPool.h"
 #include "optimisations/BucketRenderer.h"
+#include "optimisations/AABB.h"
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
@@ -36,7 +37,16 @@ int main() {
   PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
   LightOptions lightOptions{ 0.01f, 0.5f };
   Lighting lighting(lightOptions, scene.lights, scene.objects);
-  Tracer tracer(scene, lighting);
+
+  // Setup AABB
+  AABB aabb;
+  for (Object& obj : scene.objects) {
+    for (Triangle& tri : obj.triangles) {
+      aabb.expand(tri);
+    }
+  }
+
+  Tracer tracer(scene, lighting, aabb);
 
   auto start = std::chrono::steady_clock::now();
 

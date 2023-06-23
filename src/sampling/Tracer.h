@@ -6,9 +6,10 @@
 #include "sampling/IntersectionData.h"
 #include "sampling/Triangle.h"
 #include "sampling/Object.h"
+#include "optimisations/AABB.h"
 
 struct Tracer {
-  Tracer(Scene& scene, Lighting& lights) : scene(scene), lighting(lights) {}
+  Tracer(Scene& scene, Lighting& lights, AABB& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
 
   InternalColor trace(const Ray& ray, int depth) {
     IntersectionData intersectionData{};
@@ -39,6 +40,7 @@ struct Tracer {
 private:
   Scene& scene;
   Lighting& lighting;
+  AABB& aabb;
   float reflectionBias = 0.01f;
 };
 
