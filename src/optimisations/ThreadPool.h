@@ -6,6 +6,7 @@
 #include <deque>
 #include <functional>
 #include <cstdint>
+#include <iostream>
 
 struct ThreadPool {
   inline void start() {
@@ -22,20 +23,42 @@ struct ThreadPool {
   }
 
   inline void stop() {
-    working = false;
+    std::lock_guard<std::mutex> waitingMutex(waitingMutex);
+    waiting = false;
+  }
+
+  ~ThreadPool() {
+    stop();
+    for (std::thread& worker : workers) {
+      worker.join();
+    }
   }
 private:
   std::mutex jobsMutex;
   std::deque<std::function<void()>> jobQueue;
   std::vector<std::thread> workers;
-  bool working = true;
+  bool waiting = true;
+  std::mutex waitingMutex;
 
   void waitForWork() {
-    while (working) {
-      std::lock_guard<std::mutex> jobQueueGuard(jobsMutex);
-      if (jobQueue.empty()) { continue; }
+    while (true) {
+      jobsMutex.lock();
+      waitingMutex.lock();
+      if (jobQueue.empty() && waiting) {
+        jobsMutex.unlock();
+        waitingMutex.unlock();
+        continue;
+      }
+      if (jobQueue.empty() && !waiting) {
+        jobsMutex.unlock();
+        waitingMutex.unlock();
+        break;
+      }
+      waitingMutex.unlock();
       auto job = jobQueue.front();
       jobQueue.pop_front();
+      jobsMutex.unlock();
+      
       job();
     }
   }

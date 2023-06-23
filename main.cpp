@@ -23,7 +23,7 @@
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("reflscene4.crtscene");
+  Scene scene("reflscene5.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -37,12 +37,16 @@ int main() {
   LightOptions lightOptions{ 0.01f, 0.5f };
   Lighting lighting(lightOptions, scene.lights, scene.objects);
   Tracer tracer(scene, lighting);
-  BucketRenderer bucketRenderer(rayGenerator, tracer, scene, image);
 
-  std::cout << "Rendering..." << '\n';
   auto start = std::chrono::steady_clock::now();
 
-  bucketRenderer.render();
+  {
+    BucketRenderer bucketRenderer(rayGenerator, tracer, scene, image);
+
+    std::cout << "Rendering..." << '\n';
+
+    bucketRenderer.render();
+  }
 
   auto end = std::chrono::steady_clock::now();
   std::chrono::duration<double> elapsedSeconds = end - start;

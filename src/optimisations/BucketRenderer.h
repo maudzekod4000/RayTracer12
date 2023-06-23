@@ -22,15 +22,9 @@ struct BucketRenderer {
   }
 
   void render() {
-    while (true) {
-      bucketMutex.lock();
-      if (buckets.empty()) {
-        bucketMutex.unlock();
-        break;
-      }
+    while (!buckets.empty()) {
       Bucket bucket = buckets.top();
       buckets.pop();
-      bucketMutex.unlock();
 
       auto renderJob = [bucket, this]() {
         for (int32_t row = bucket.y; row < bucket.y + bucketSize; row++) {
@@ -42,7 +36,6 @@ struct BucketRenderer {
       };
       threadPool.doJob(renderJob);
     }
-    threadPool.stop();
   }
 private:
   ThreadPool threadPool;

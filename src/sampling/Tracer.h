@@ -16,17 +16,21 @@ struct Tracer {
     for (Object& obj : scene.objects) {
       for (Triangle& tr : obj.triangles) {
         if (tr.intersect(ray, intersectionData)) {
-          if (obj.mat.type == "diffuse") {
-            return obj.mat.albedo + lighting.light(intersectionData);
-          }
-          else if (obj.mat.type == "reflective") {
-            Ray newReflectionRay{
-              intersectionData.p + (intersectionData.pN * reflectionBias),
-              glm::reflect(ray.dir, intersectionData.pN)
-            };
-            return trace(newReflectionRay, depth + 1) + lighting.light(intersectionData);
-          }
+          intersectionData.mat = obj.mat;
         }
+      }
+    }
+
+    if (intersectionData.intersection) {
+      if (intersectionData.mat.type == "diffuse") {
+        return intersectionData.mat.albedo + lighting.light(intersectionData);
+      }
+      else if (intersectionData.mat.type == "reflective") {
+        Ray newReflectionRay{
+          intersectionData.p + (intersectionData.pN * reflectionBias),
+          glm::reflect(ray.dir, intersectionData.pN)
+        };
+        return trace(newReflectionRay, depth + 1) + lighting.light(intersectionData);
       }
     }
 
