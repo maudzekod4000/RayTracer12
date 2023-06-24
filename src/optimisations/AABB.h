@@ -19,41 +19,60 @@ struct AABB {
     std::vector<Vertex> vertices = { triangle.a, triangle.b, triangle.c };
 
     for (Vertex& vertex : vertices) {
-      if (vertex.pos.x < min.x && vertex.pos.y < min.y && vertex.pos.z < min.z) {
-        min = vertex.pos;
+      if (vertex.pos.x < min.x) {
+        min.x = vertex.pos.x;
       }
-      if (vertex.pos.x > max.x && vertex.pos.y > max.y && vertex.pos.z > max.z) {
-        max = vertex.pos;
+      if (vertex.pos.y < min.y) {
+        min.y = vertex.pos.y;
+      }
+      if (vertex.pos.z < min.z) {
+        min.z = vertex.pos.z;
+      }
+      if (vertex.pos.x > max.x) {
+        max.x = vertex.pos.x;
+      }
+      if (vertex.pos.y > max.y) {
+        max.y = vertex.pos.y;
+      }
+      if (vertex.pos.z > max.z) {
+        max.z = vertex.pos.z;
       }
     }
   }
 
-  inline bool intersect(const Ray& ray) const {
-    // First, calculate the t values for the intersection of the ray with all planes
-    // with which the cube is defined.
-    
-    // Minimum point's x component t value
-    float tminx = (min.x - ray.origin.x) / ray.dir.x;
-    float tminy = (min.y - ray.origin.y) / ray.dir.y;
-    float tminz = (min.z - ray.origin.z) / ray.dir.z;
+  inline bool intersect(const Ray& r) const {
+    float tmin = (min.x - r.origin.x) / r.dir.x;
+    float tmax = (max.x - r.origin.x) / r.dir.x;
 
-    // Maximum component defined planes
-    float tmaxx = (max.x - ray.origin.x) / ray.dir.x;
-    float tmaxy = (max.y - ray.origin.y) / ray.dir.y;
-    float tmaxz = (max.z - ray.origin.z) / ray.dir.z;
+    if (tmin > tmax) std::swap(tmin, tmax);
 
-    // We need the 'greater' point between the intersections with the min-defined planes.
-    // Greater, in 2D, means more to the upper right direction.
-    float tmaxOfMin = tminx > tminy ? tminx : tminy;
-    tmaxOfMin = tminz > tmaxOfMin ? tminz : tmaxOfMin;
+    float tymin = (min.y - r.origin.y) / r.dir.y;
+    float tymax = (max.y - r.origin.y) / r.dir.y;
 
-    // Now for the maximum component we need the smaller point
-    float tminOfMax = tmaxx < tmaxy ? tmaxx : tmaxy;
-    tminOfMax = tmaxz < tminOfMax ? tmaxz : tminOfMax;
+    if (tymin > tymax) std::swap(tymin, tymax);
 
-    if (tminOfMax < tmaxOfMin) {
+    if ((tmin > tymax) || (tymin > tmax))
       return false;
-    }
+
+    if (tymin > tmin)
+      tmin = tymin;
+
+    if (tymax < tmax)
+      tmax = tymax;
+
+    float tzmin = (min.z - r.origin.z) / r.dir.z;
+    float tzmax = (max.z - r.origin.z) / r.dir.z;
+
+    if (tzmin > tzmax) std::swap(tzmin, tzmax);
+
+    if ((tmin > tzmax) || (tzmin > tmax))
+      return false;
+
+    if (tzmin > tmin)
+      tmin = tzmin;
+
+    if (tzmax < tmax)
+      tmax = tzmax;
 
     return true;
   }

@@ -14,10 +14,12 @@ struct Tracer {
   InternalColor trace(const Ray& ray, int depth) {
     IntersectionData intersectionData{};
 
-    for (Object& obj : scene.objects) {
-      for (Triangle& tr : obj.triangles) {
-        if (tr.intersect(ray, intersectionData)) {
-          intersectionData.mat = obj.mat;
+    if (aabb.intersect(ray)) {
+      for (Object& obj : scene.objects) {
+        for (Triangle& tr : obj.triangles) {
+          if (tr.intersect(ray, intersectionData)) {
+            intersectionData.mat = obj.mat;
+          }
         }
       }
     }
