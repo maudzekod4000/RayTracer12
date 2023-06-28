@@ -21,10 +21,11 @@
 #include "optimisations/ThreadPool.h"
 #include "optimisations/BucketRenderer.h"
 #include "optimisations/AABB.h"
+#include "optimisations/AABBTree.h"
 
 int main() {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("reflscene5.crtscene");
+  Scene scene("baryscene0.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -45,6 +46,8 @@ int main() {
       aabb.expand(tri);
     }
   }
+
+  AABBTree tree(scene.objects, aabb);
 
   Tracer tracer(scene, lighting, aabb);
 

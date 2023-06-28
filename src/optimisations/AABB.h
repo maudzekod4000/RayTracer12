@@ -47,9 +47,9 @@ struct AABB {
   }
 
   inline bool intersect(const AABB& aabb) const {
-    return max.x > aabb.min.x && aabb.max.x > min.x &&
-      max.y > aabb.min.y && aabb.max.y > min.y &&
-      max.z > aabb.min.z && aabb.max.z > min.z;
+    return max.x >= aabb.min.x && aabb.max.x >= min.x &&
+      max.y >= aabb.min.y && aabb.max.y >= min.y &&
+      max.z >= aabb.min.z && aabb.max.z >= min.z;
   }
 
   inline bool intersect(const Ray& r) const {

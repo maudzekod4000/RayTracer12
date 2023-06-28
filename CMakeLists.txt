@@ -37,6 +37,7 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/optimisations/Bucket.h
 	${DIR}/src/optimisations/BucketRenderer.h
 	${DIR}/src/optimisations/AABB.h
+	${DIR}/src/optimisations/AABBTree.h
 )
 
 add_dependencies(${PROJECT_NAME} rapidjson)
