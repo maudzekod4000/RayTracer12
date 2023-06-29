@@ -12,6 +12,7 @@ float maxFloat = std::numeric_limits<float>::max();
 
 struct AABB {
   AABB() : min(Vec3(maxFloat)), max(-min) {}
+  AABB(Vec3& min, Vec3& max) : min(min), max(max) {}
   Vec3 min;
   Vec3 max;
 

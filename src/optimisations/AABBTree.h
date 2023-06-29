@@ -2,25 +2,25 @@
 #define AABB_TREE_H
 
 #include <vector>
+#include <stack>
 
 #include "sampling/Triangle.h"
 #include "AABB.h"
+#include "sampling/IntersectionData.h"
 #include <utils/TypeDefs.h>
 
 struct Node {
-	Node(std::vector<Triangle>& tris, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
-		triangles(tris),
+	Node(std::vector<Object>& partialObjects, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
+		objectParts(partialObjects),
 		isLeaf(isLeaf),
-		min(min),
-		max(max),
+		box({ min, max }),
 		child1Idx(child1),
 		child2Idx(child2) {}
 	Node() = default;
 
-	std::vector<Triangle> triangles;
+	std::vector<Object> objectParts;
 	bool isLeaf;
-	Vec3 min{};
-	Vec3 max{};
+	AABB box;
 	int child1Idx{};
 	int child2Idx{};
 };
@@ -30,19 +30,61 @@ struct AABBTree {
 		buildTree(initBox, 0, -1, -1, 0);
 	}
 
+	inline IntersectionData intersectAABBTree(const Ray& ray) {
+		std::stack<Node> boxStack;
+
+		boxStack.push(nodes[0]);
+		IntersectionData intrsData{};
+
+		while (!boxStack.empty()) {
+			Node currentBox = boxStack.top();
+			boxStack.pop();
+
+			if (currentBox.box.intersect(ray)) {
+				// The ray intersects the box lets move on to its children! :}
+				if (currentBox.isLeaf) {
+					// This is a leaf node, let's intersect all the objects in it and update intrsData
+					for (Object& obj : currentBox.objectParts) {
+						for (Triangle& tri : obj.triangles) {
+							if (tri.intersect(ray, intrsData)) {
+								intrsData.mat = obj.mat;
+							}
+						}
+					}
+				}
+				else {
+					// This is not a leaf node. Let's add it's children to the stack
+					boxStack.push(nodes[currentBox.child1Idx]);
+					boxStack.push(nodes[currentBox.child2Idx]);
+				}
+			}
+		}
+
+		return intrsData;
+	}
+
 	std::vector<Node> nodes;
 	int32_t leafSize = 1;
 	std::vector<Object> objects;
 	int32_t maxDepth = 10;
 private:
-	void buildTree(AABB& box, int component, int parentIdx, int child, int depth) {
-		std::vector<Triangle> trianglesInBox;
+	inline void buildTree(AABB& box, int component, int parentIdx, int child, int depth) {
+		std::vector<Object> partialObjectsInABox;
+		size_t trianglesInABox = 0;
 
 		for (Object& obj : objects) {
+			Object partialObj = obj;
+			partialObj.triangles.clear();
+
 			for (Triangle& tri : obj.triangles) {
 				if (box.intersect(tri)) {
-					trianglesInBox.push_back(tri);
+					partialObj.triangles.push_back(tri);
+					trianglesInABox++;
 				}
+			}
+
+			if (partialObj.triangles.size() > 0) {
+				partialObjectsInABox.push_back(partialObj);
 			}
 		}
 
@@ -57,13 +99,13 @@ private:
 			}
 		}
 
-		if (depth > maxDepth || trianglesInBox.size() <= leafSize) {
-			nodes.emplace_back(trianglesInBox, true, box.min, box.max, -1, -1);
+		if (depth > maxDepth || trianglesInABox <= leafSize) {
+			nodes.emplace_back(partialObjectsInABox, true, box.min, box.max, -1, -1);
 			
 			return;
 		}
 
-		nodes.emplace_back(std::vector<Triangle>{}, false, box.min, box.max, -1, -1);
+		nodes.emplace_back(std::vector<Object>{}, false, box.min, box.max, -1, -1);
 
 		AABB firstChildBox = box;
 		firstChildBox.max[component] = firstChildBox.min[component] + ((firstChildBox.max[component] - firstChildBox.min[component]) / 2);

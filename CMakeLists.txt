@@ -28,6 +28,7 @@ add_executable(${PROJECT_NAME}
 	${DIR}/src/sampling/Vertex.h
 	${DIR}/src/sampling/Material.h
 	${DIR}/src/sampling/Object.h
+	${DIR}/src/sampling/Tracer.h
 
 	${DIR}/src/utils/TypeDefs.h
 

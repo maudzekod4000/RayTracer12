@@ -24,8 +24,10 @@
 #include "optimisations/AABBTree.h"
 
 int main() {
+  int a;
+  std::cin >> a;
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("baryscene0.crtscene");
+  Scene scene("reflscene5.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
@@ -49,7 +51,7 @@ int main() {
 
   AABBTree tree(scene.objects, aabb);
 
-  Tracer tracer(scene, lighting, aabb);
+  Tracer tracer(scene, lighting, tree);
 
   auto start = std::chrono::steady_clock::now();
 

@@ -6,23 +6,13 @@
 #include "sampling/IntersectionData.h"
 #include "sampling/Triangle.h"
 #include "sampling/Object.h"
-#include "optimisations/AABB.h"
+#include "optimisations/AABBTree.h"
 
 struct Tracer {
-  Tracer(Scene& scene, Lighting& lights, AABB& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
+  Tracer(Scene& scene, Lighting& lights, AABBTree& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
 
   InternalColor trace(const Ray& ray, int depth) {
-    IntersectionData intersectionData{};
-
-    if (aabb.intersect(ray)) {
-      for (Object& obj : scene.objects) {
-        for (Triangle& tr : obj.triangles) {
-          if (tr.intersect(ray, intersectionData)) {
-            intersectionData.mat = obj.mat;
-          }
-        }
-      }
-    }
+    IntersectionData intersectionData = aabb.intersectAABBTree(ray);
 
     if (intersectionData.intersection) {
       if (intersectionData.mat.type == "diffuse") {
@@ -42,7 +32,7 @@ struct Tracer {
 private:
   Scene& scene;
   Lighting& lighting;
-  AABB& aabb;
+  AABBTree& aabb;
   float reflectionBias = 0.01f;
 };
 
