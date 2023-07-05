@@ -3,6 +3,8 @@
 ## Features
 
 - Diffuse, Reflective materials
+- Smooth shading
+- Barycentric coordinates calculation
 - Lighting
 - Bucket rendering
 - Kd tree
