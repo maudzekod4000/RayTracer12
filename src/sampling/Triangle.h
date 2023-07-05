@@ -16,7 +16,7 @@ struct Triangle {
   Vec3 n;
 
   inline float area() const {
-    return glm::length(glm::cross(b.pos - a.pos, c.pos - a.pos)) / 2.0f;
+    return area(a.pos, b.pos, c.pos);
   }
 
   inline bool intersect(const Ray& ray, IntersectionData& intersectionData) const {
@@ -37,9 +37,14 @@ struct Triangle {
 
     Vec3 p = ray.origin + t * ray.dir;
 
-    if (dot(n, cross(b.pos - a.pos, p - a.pos)) < 0.0f ||
-      dot(n, cross(c.pos - b.pos, p - b.pos)) < 0.0f ||
-      dot(n, cross(a.pos - c.pos, p - c.pos)) < 0.0f) {
+    // If the intersection point is just a bit to the right of the triangle side we don't care.
+    // We avoid artifacts when two triangle sides are next to each other.
+    // We want them to blend a bit to avoid jagged edges.
+    const float e = -0.000001;
+
+    if (dot(n, cross(b.pos - a.pos, p - a.pos)) <= e ||
+      dot(n, cross(c.pos - b.pos, p - b.pos)) <= e ||
+      dot(n, cross(a.pos - c.pos, p - c.pos)) <= e) {
       return false;
     }
 
@@ -48,6 +53,7 @@ struct Triangle {
     intersectionData.intersection = true;
 
     // Calculate barycentric coordinates of the hit and set the hit normal
+    // TODO: Use the private method below to calculate this.
     float areaM = glm::length(glm::cross(p - a.pos, c.pos - a.pos)) / 2;
     float areaN = glm::length(glm::cross(b.pos - a.pos, p - a.pos)) / 2;
     float areaTri = glm::length(glm::cross(b.pos - a.pos, c.pos - a.pos)) / 2;
@@ -60,6 +66,12 @@ struct Triangle {
     intersectionData.pNNonSmooth = n;
 
     return true;
+  }
+
+private:
+  // Calculates the area of the triangle defined by the three point arguments.
+  inline float area(const Vec3& a, const Vec3& b, const Vec3& c) const {
+    return glm::length(glm::cross(b - a, c - a)) / 2.0f;
   }
 };
 

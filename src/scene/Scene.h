@@ -178,7 +178,7 @@ private:
 
           const Value& materialIdxVal = objectsArr[i].FindMember("material_index")->value;
 
-          if (!materialIdxVal.IsNull() && materialIdxVal.IsInt()) {
+          if (!materialIdxVal.IsNull() && materialIdxVal.IsInt() && materials.size() > 0) {
             int materialIdx = materialIdxVal.GetInt();
             currentObject.mat = materials[materialIdx];
           }
@@ -247,6 +247,11 @@ private:
           for (TempTriangle* tri : tempTriangles) {
             Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]]);
             currentObject.triangles.push_back(renderingTriangle);
+          }
+
+          if (currentObject.mat.type.empty()) {
+            // Set a random color if the object has no material
+            currentObject.mat.albedo = InternalColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
           }
 
           objects.push_back(currentObject);

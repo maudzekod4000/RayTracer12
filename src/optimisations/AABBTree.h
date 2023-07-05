@@ -66,7 +66,7 @@ struct AABBTree {
 	std::vector<Node> nodes;
 	int32_t leafSize = 1;
 	std::vector<Object> objects;
-	int32_t maxDepth = 10;
+	int32_t maxDepth = 15;
 private:
 	inline void buildTree(AABB& box, int component, int parentIdx, int child, int depth) {
 		std::vector<Object> partialObjectsInABox;

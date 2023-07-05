@@ -24,10 +24,8 @@
 #include "optimisations/AABBTree.h"
 
 int main() {
-  int a;
-  std::cin >> a;
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("reflscene5.crtscene");
+  Scene scene("../scenes/shading-1/scene5.crtscene");
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
