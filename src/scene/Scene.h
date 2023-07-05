@@ -249,6 +249,7 @@ private:
           // Create the final triangle collection and delete all other data.
           for (TempTriangle* tri : tempTriangles) {
             Triangle renderingTriangle(vertices[tri->vertices[0]], vertices[tri->vertices[1]], vertices[tri->vertices[2]]);
+            renderingTriangle.objIdx = objects.size();
             currentObject.triangles.push_back(renderingTriangle);
           }
 

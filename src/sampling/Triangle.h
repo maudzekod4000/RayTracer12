@@ -14,6 +14,7 @@ struct Triangle {
   Vertex b;
   Vertex c;
   Vec3 n;
+  int objIdx;
 
   inline float area() const {
     return area(a.pos, b.pos, c.pos);

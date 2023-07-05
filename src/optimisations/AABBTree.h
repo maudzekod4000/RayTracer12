@@ -11,15 +11,15 @@
 #include <utils/TypeDefs.h>
 
 struct Node {
-	Node(std::vector<Object>& partialObjects, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
-		objectParts(partialObjects),
+	Node(std::vector<Triangle>& triangles, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
+		triangles(triangles),
 		isLeaf(isLeaf),
 		box({ min, max }),
 		child1Idx(child1),
 		child2Idx(child2) {}
 	Node() = default;
 
-	std::vector<Object> objectParts;
+	std::vector<Triangle> triangles;
 	bool isLeaf;
 	AABB box;
 	int child1Idx{};
@@ -30,12 +30,14 @@ struct AABBTree {
 	AABBTree(std::vector<Object>& objects): objects(objects) {
 		std::cout << "Building optimisation structure...\n";
 		AABB aabb;
+		std::vector<Triangle> triangles;
 		for (Object& obj : objects) {
 			for (Triangle& tri : obj.triangles) {
 				aabb.expand(tri);
+				triangles.push_back(tri);
 			}
 		}
-		buildTree(aabb, 0, -1, -1, 0);
+		buildTree(triangles, aabb, 0, -1, -1, 0);
 		std::cout << "Done building optimisation structure...\n";
 	}
 
@@ -53,11 +55,9 @@ struct AABBTree {
 				// The ray intersects the box lets move on to its children! :}
 				if (currentBox.isLeaf) {
 					// This is a leaf node, let's intersect all the objects in it and update intrsData
-					for (Object& obj : currentBox.objectParts) {
-						for (Triangle& tri : obj.triangles) {
-							if (tri.intersect(ray, intrsData)) {
-								intrsData.mat = obj.mat;
-							}
+					for (Triangle& tri : currentBox.triangles) {
+						if (tri.intersect(ray, intrsData)) {
+							intrsData.mat = objects[tri.objIdx].mat;
 						}
 					}
 				}
@@ -75,28 +75,17 @@ struct AABBTree {
 	std::vector<Node> nodes;
 	int32_t leafSize = 1;
 	std::vector<Object> objects;
-	int32_t maxDepth = 10;
+	int32_t maxDepth = 12;
 private:
-	inline void buildTree(AABB& box, int component, int parentIdx, int child, int depth) {
-		std::vector<Object> partialObjectsInABox;
-		size_t trianglesInABox = 0;
+	inline void buildTree(const std::vector<Triangle> tris, AABB box, int component, int parentIdx, int child, int depth) {
+		std::vector<Triangle> triangles;
 
 		// Add the triangles that have intersection with the box
-		for (Object& obj : objects) {
-			Object partialObj = obj;
-			partialObj.triangles.clear();
-
-			for (Triangle& tri : obj.triangles) {
+			for (const Triangle& tri : tris) {
 				if (box.intersect(tri)) {
-					partialObj.triangles.push_back(tri);
-					trianglesInABox++;
+					triangles.push_back(tri);
 				}
 			}
-
-			if (partialObj.triangles.size() > 0) {
-				partialObjectsInABox.push_back(partialObj);
-			}
-		}
 
 		int idx = nodes.size();
 
@@ -111,22 +100,22 @@ private:
 		}
 
 		// We should not continue splitting further
-		if (depth > maxDepth || trianglesInABox <= leafSize) {
-			nodes.emplace_back(partialObjectsInABox, true, box.min, box.max, -1, -1);
+		if (depth > maxDepth || triangles.size() <= leafSize) {
+			nodes.emplace_back(triangles, true, box.min, box.max, -1, -1);
 			
 			return;
 		}
 
 		// Add a new parent node
-		nodes.emplace_back(std::vector<Object>{}, false, box.min, box.max, -1, -1);
+		nodes.emplace_back(std::vector<Triangle>{}, false, box.min, box.max, -1, -1);
 
 		// Continue splitting the box
 		AABB firstChildBox = box;
 		firstChildBox.max[component] = firstChildBox.min[component] + ((firstChildBox.max[component] - firstChildBox.min[component]) / 2);
-		buildTree(firstChildBox, (component + 1) % 3, idx, 1, depth + 1);
+		buildTree(triangles, firstChildBox, (component + 1) % 3, idx, 1, depth + 1);
 		AABB secondChildBox = box;
 		secondChildBox.min[component] = firstChildBox.max[component];
-		buildTree(secondChildBox, (component + 1) % 3, idx, 2, depth + 1);
+		buildTree(triangles, secondChildBox, (component + 1) % 3, idx, 2, depth + 1);
 	}
 };
 
