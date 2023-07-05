@@ -23,32 +23,29 @@
 #include "optimisations/AABB.h"
 #include "optimisations/AABBTree.h"
 
-int main() {
+int main(int argc, char** argv) {
+  if (argc < 2) {
+    std::cerr << "Provide the path to the crtscene file as a first argument to the program.\n";
+    return -1;
+  }
+
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("../scenes/shading-1/scene5.crtscene");
+  Scene scene(argv[1]);
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
   int32_t RENDER_HEIGHT = scene.settings.imageSettings.heigth;
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
   PPMImage image(imageMetadata);
-
   Camera camera(scene.camera.position, scene.camera.matrix);
   Raygen rayGenerator(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
   PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
-  LightOptions lightOptions{ 0.01f, 0.5f };
-  Lighting lighting(lightOptions, scene.lights, scene.objects);
-
-  // Setup AABB
-  AABB aabb;
-  for (Object& obj : scene.objects) {
-    for (Triangle& tri : obj.triangles) {
-      aabb.expand(tri);
-    }
-  }
-
-  AABBTree tree(scene.objects, aabb);
-
+  const float shadowBias = 0.01f;
+  // Higher values result in more lit scene
+  const float lightIntensityMultiplier = 0.5f;
+  LightOptions lightOptions{ shadowBias, lightIntensityMultiplier };
+  AABBTree tree(scene.objects);
+  Lighting lighting(lightOptions, scene.lights, tree);
   Tracer tracer(scene, lighting, tree);
 
   auto start = std::chrono::steady_clock::now();

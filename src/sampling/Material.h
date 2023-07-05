@@ -4,8 +4,14 @@
 #include <string>
 #include <utils/TypeDefs.h>
 
+enum class MaterialType {
+  DIFFUSE,
+  REFLECTIVE,
+  NONE
+};
+
 struct Material {
-  std::string type;
+  MaterialType type;
   Vec3 albedo{};
   bool smoothShading = false;
   float ior{};

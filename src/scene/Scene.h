@@ -145,22 +145,25 @@ private:
 
           const auto& materialVal = materialsArr[i].GetObject();
           const Value& typeVal = materialVal.FindMember("type")->value;
-          mat.type = typeVal.GetString();
+          std::string type = typeVal.GetString();
 
-          if (mat.type != "refractive") {
-            const Value& albedoVal = materialVal.FindMember("albedo")->value;
-            GenericArray albedoArr = albedoVal.GetArray();
-            Vec3 albedo{ albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat() };
-            mat.albedo = albedo;
+          if (type == "reflective") {
+            mat.type = MaterialType::REFLECTIVE;
           }
+          else if (type == "diffuse") {
+            mat.type = MaterialType::DIFFUSE;
+          }
+          else {
+            mat.type = MaterialType::NONE;
+          }
+
+          const Value& albedoVal = materialVal.FindMember("albedo")->value;
+          GenericArray albedoArr = albedoVal.GetArray();
+          Vec3 albedo{ albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat() };
+          mat.albedo = albedo;
 
           const Value& smoothShadingVal = materialVal.FindMember("smooth_shading")->value;
           mat.smoothShading = smoothShadingVal.GetBool();
-
-          if (mat.type == "refractive") {
-            const Value& iorVal = materialVal.FindMember("ior")->value;
-            mat.ior = iorVal.GetFloat();
-          }
 
           materials.push_back(mat);
         }
@@ -249,7 +252,7 @@ private:
             currentObject.triangles.push_back(renderingTriangle);
           }
 
-          if (currentObject.mat.type.empty()) {
+          if (currentObject.mat.type == MaterialType::NONE) {
             // Set a random color if the object has no material
             currentObject.mat.albedo = InternalColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
           }

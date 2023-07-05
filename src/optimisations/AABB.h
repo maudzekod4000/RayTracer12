@@ -8,10 +8,8 @@
 #include "sampling/Triangle.h"
 #include "sampling/Vertex.h"
 
-float maxFloat = std::numeric_limits<float>::max();
-
 struct AABB {
-  AABB() : min(Vec3(maxFloat)), max(-min) {}
+  AABB() : min(Vec3(std::numeric_limits<float>::max())), max(-min) {}
   AABB(Vec3& min, Vec3& max) : min(min), max(max) {}
   Vec3 min;
   Vec3 max;
@@ -20,24 +18,13 @@ struct AABB {
     std::vector<Vertex> vertices = { triangle.a, triangle.b, triangle.c };
 
     for (Vertex& vertex : vertices) {
-      if (vertex.pos.x < min.x) {
-        min.x = vertex.pos.x;
-      }
-      if (vertex.pos.y < min.y) {
-        min.y = vertex.pos.y;
-      }
-      if (vertex.pos.z < min.z) {
-        min.z = vertex.pos.z;
-      }
-      if (vertex.pos.x > max.x) {
-        max.x = vertex.pos.x;
-      }
-      if (vertex.pos.y > max.y) {
-        max.y = vertex.pos.y;
-      }
-      if (vertex.pos.z > max.z) {
-        max.z = vertex.pos.z;
-      }
+      min.x = glm::min(vertex.pos.x, min.x);
+      min.y = glm::min(vertex.pos.y, min.y);
+      min.z = glm::min(vertex.pos.z, min.z);
+
+      max.x = glm::max(vertex.pos.x, max.x);
+      max.y = glm::max(vertex.pos.y, max.y);
+      max.z = glm::max(vertex.pos.z, max.z);
     }
   }
 

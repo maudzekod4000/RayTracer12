@@ -13,6 +13,8 @@
 #include "scene/Scene.h"
 
 struct BucketRenderer {
+
+  // Creates buckets and starts the thread pool on creation
   BucketRenderer(Raygen& raygen, Tracer& tracer, Scene& scene, PPMImage& image) :
     rayGen(raygen),
     tracer(tracer),
@@ -21,6 +23,7 @@ struct BucketRenderer {
     buildBuckets(); threadPool.start();
   }
 
+  // Iterates the buckets and gives them to the thread pool for execution.
   void render() {
     while (!buckets.empty()) {
       Bucket bucket = buckets.top();
@@ -44,9 +47,9 @@ private:
   Tracer& tracer;
   Scene& scene;
   PPMImage& imageBuffer;
-  std::mutex bucketMutex;
   int32_t bucketSize = 20;
 
+  // Splits the image plane into squares for parallel rendering.
   void buildBuckets() {
     int32_t width = scene.settings.imageSettings.width;
     int32_t height = scene.settings.imageSettings.heigth;

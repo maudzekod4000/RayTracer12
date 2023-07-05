@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stack>
+#include <iostream>
 
 #include "sampling/Triangle.h"
 #include "AABB.h"
@@ -26,8 +27,16 @@ struct Node {
 };
 
 struct AABBTree {
-	AABBTree(std::vector<Object>& objects, AABB& initBox): objects(objects) {
-		buildTree(initBox, 0, -1, -1, 0);
+	AABBTree(std::vector<Object>& objects): objects(objects) {
+		std::cout << "Building optimisation structure...\n";
+		AABB aabb;
+		for (Object& obj : objects) {
+			for (Triangle& tri : obj.triangles) {
+				aabb.expand(tri);
+			}
+		}
+		buildTree(aabb, 0, -1, -1, 0);
+		std::cout << "Done building optimisation structure...\n";
 	}
 
 	inline IntersectionData intersectAABBTree(const Ray& ray) {
@@ -66,12 +75,13 @@ struct AABBTree {
 	std::vector<Node> nodes;
 	int32_t leafSize = 1;
 	std::vector<Object> objects;
-	int32_t maxDepth = 15;
+	int32_t maxDepth = 10;
 private:
 	inline void buildTree(AABB& box, int component, int parentIdx, int child, int depth) {
 		std::vector<Object> partialObjectsInABox;
 		size_t trianglesInABox = 0;
 
+		// Add the triangles that have intersection with the box
 		for (Object& obj : objects) {
 			Object partialObj = obj;
 			partialObj.triangles.clear();
@@ -90,6 +100,7 @@ private:
 
 		int idx = nodes.size();
 
+		// Are we processing a first or second child?
 		if (parentIdx > -1) {
 			if (child == 1) {
 				nodes[parentIdx].child1Idx = idx;
@@ -99,14 +110,17 @@ private:
 			}
 		}
 
+		// We should not continue splitting further
 		if (depth > maxDepth || trianglesInABox <= leafSize) {
 			nodes.emplace_back(partialObjectsInABox, true, box.min, box.max, -1, -1);
 			
 			return;
 		}
 
+		// Add a new parent node
 		nodes.emplace_back(std::vector<Object>{}, false, box.min, box.max, -1, -1);
 
+		// Continue splitting the box
 		AABB firstChildBox = box;
 		firstChildBox.max[component] = firstChildBox.min[component] + ((firstChildBox.max[component] - firstChildBox.min[component]) / 2);
 		buildTree(firstChildBox, (component + 1) % 3, idx, 1, depth + 1);

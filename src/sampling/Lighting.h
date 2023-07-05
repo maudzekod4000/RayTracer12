@@ -5,6 +5,7 @@
 
 #include <utils/TypeDefs.h>
 #include "sampling/Ray.h"
+#include "optimisations/AABBTree.h"
 
 struct Light {
   Vec3 pos;
@@ -17,8 +18,8 @@ struct LightOptions {
 };
 
 struct Lighting {
-  inline Lighting(LightOptions& opts, const std::vector<Light>& lights, const std::vector<Object>& objects) :
-    options(opts), lights(lights), objects(objects) {}
+  inline Lighting(LightOptions& opts, const std::vector<Light>& lights, AABBTree& tree) :
+    options(opts), lights(lights), tree(tree) {}
 
   /// <summary>
   /// Calculates the shadow color from an intersection point.
@@ -33,18 +34,11 @@ struct Lighting {
       float lightSphereRadius = glm::length(lightDir);
       lightDir = glm::normalize(lightDir);
       Ray shadowRay{ pushIntersectionPoint(intersectionData.p, intersectionData.pN, options.shadowBias), lightDir };
+      
       bool intersects = false;
-      IntersectionData intrData{};
-
-      for (Object& obj : objects) {
-        for (const Triangle& triangle : obj.triangles) {
-          if (triangle.intersect(shadowRay, intrData)) {
-            if (intrData.t < lightSphereRadius) {
-              intersects = true;
-              break;
-            }
-          }
-        }
+      IntersectionData intrData = tree.intersectAABBTree(shadowRay);
+      if (intrData.t < lightSphereRadius) {
+        intersects = true;
       }
 
       if (!intersects) {
@@ -76,7 +70,7 @@ struct Lighting {
 
   LightOptions options;
   std::vector<Light> lights;
-  std::vector<Object> objects;
+  AABBTree& tree;
 };
 
 

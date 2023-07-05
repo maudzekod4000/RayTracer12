@@ -15,10 +15,10 @@ struct Tracer {
     IntersectionData intersectionData = aabb.intersectAABBTree(ray);
 
     if (intersectionData.intersection) {
-      if (intersectionData.mat.type == "diffuse" || intersectionData.mat.type.empty()) {
+      if (intersectionData.mat.type == MaterialType::DIFFUSE || intersectionData.mat.type == MaterialType::NONE) {
         return intersectionData.mat.albedo + lighting.light(intersectionData);
       }
-      else if (intersectionData.mat.type == "reflective") {
+      else if (intersectionData.mat.type == MaterialType::REFLECTIVE) {
         Ray newReflectionRay{
           intersectionData.p + (intersectionData.pN * reflectionBias),
           glm::reflect(ray.dir, intersectionData.pN)
