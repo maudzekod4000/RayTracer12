@@ -18,13 +18,8 @@ struct AABB {
     std::vector<Vertex> vertices = { triangle.a, triangle.b, triangle.c };
 
     for (Vertex& vertex : vertices) {
-      min.x = glm::min(vertex.pos.x, min.x);
-      min.y = glm::min(vertex.pos.y, min.y);
-      min.z = glm::min(vertex.pos.z, min.z);
-
-      max.x = glm::max(vertex.pos.x, max.x);
-      max.y = glm::max(vertex.pos.y, max.y);
-      max.z = glm::max(vertex.pos.z, max.z);
+      min = glm::min(vertex.pos, min);
+      max = glm::max(vertex.pos, max);
     }
   }
 

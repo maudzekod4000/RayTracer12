@@ -40,9 +40,9 @@ int main(int argc, char** argv) {
   Camera camera(scene.camera.position, scene.camera.matrix);
   Raygen rayGenerator(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
   PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
-  const float shadowBias = 0.01f;
+  const float shadowBias = 0.001f;
   // Higher values result in more lit scene
-  const float lightIntensityMultiplier = 0.5f;
+  const float lightIntensityMultiplier = 0.1f;
   LightOptions lightOptions{ shadowBias, lightIntensityMultiplier };
   AABBTree tree(scene.objects);
   Lighting lighting(lightOptions, scene.lights, tree);

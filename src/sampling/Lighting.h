@@ -31,12 +31,12 @@ struct Lighting {
 
     for (const Light& light : lights) {
       Vec3 lightDir = light.pos - intersectionData.p;
-      float lightSphereRadius = glm::length(lightDir);
       lightDir = glm::normalize(lightDir);
       Ray shadowRay{ pushIntersectionPoint(intersectionData.p, intersectionData.pN, options.shadowBias), lightDir };
       
       bool intersects = false;
       IntersectionData intrData = tree.intersectAABBTree(shadowRay);
+      float lightSphereRadius = glm::length(lightDir);
       if (intrData.t < lightSphereRadius) {
         intersects = true;
       }
@@ -67,7 +67,7 @@ struct Lighting {
   inline Vec3 pushIntersectionPoint(const Vec3& originalPoint, const Vec3& hitNormal, float bias) const {
     return originalPoint + (hitNormal * bias);
   }
-
+private:
   LightOptions options;
   std::vector<Light> lights;
   AABBTree& tree;

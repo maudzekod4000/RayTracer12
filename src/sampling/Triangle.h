@@ -21,7 +21,7 @@ struct Triangle {
   }
 
   inline bool intersect(const Ray& ray, IntersectionData& intersectionData) const {
-    float rayProjectionOnPlaneNormal = dot(ray.dir, n);
+    float rayProjectionOnPlaneNormal = glm::dot(ray.dir, n);
 
     /* The ray is perpendicular we have no work */
     if (rayProjectionOnPlaneNormal == 0.0f) {

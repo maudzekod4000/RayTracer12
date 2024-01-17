@@ -52,6 +52,7 @@ struct Scene {
   std::vector<Object> objects;
   std::vector<Light> lights;
   std::vector<Material> materials;
+  int triangleCount = 0;
 private:
   void parseSceneFile(std::string_view sceneFileName) {
     std::ifstream ifs(sceneFileName.data());
@@ -153,14 +154,20 @@ private:
           else if (type == "diffuse") {
             mat.type = MaterialType::DIFFUSE;
           }
+          else if (type == "refractive") {
+            mat.type = MaterialType::REFRACTIVE;
+          }
           else {
             mat.type = MaterialType::NONE;
           }
 
           const Value& albedoVal = materialVal.FindMember("albedo")->value;
-          GenericArray albedoArr = albedoVal.GetArray();
-          Vec3 albedo{ albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat() };
-          mat.albedo = albedo;
+
+          if (albedoVal.IsArray()) {
+            GenericArray albedoArr = albedoVal.GetArray();
+            Vec3 albedo{ albedoArr[0].GetFloat(), albedoArr[1].GetFloat(), albedoArr[2].GetFloat() };
+            mat.albedo = albedo;
+          }
 
           const Value& smoothShadingVal = materialVal.FindMember("smooth_shading")->value;
           mat.smoothShading = smoothShadingVal.GetBool();
@@ -224,6 +231,7 @@ private:
                   tempTri->b = vertices[1];
                   tempTri->c = vertices[2];
                   tempTriangles.push_back(tempTri);
+                  triangleCount++;
 
                   vertexIndxToTriangles[vArr[0]].push_back(tempTri);
                   vertexIndxToTriangles[vArr[1]].push_back(tempTri);

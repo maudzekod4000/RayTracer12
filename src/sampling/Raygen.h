@@ -6,8 +6,8 @@
 #include "sampling/Ray.h"
 
 struct Raygen {
-  inline Raygen(int32_t wid, int32_t hei, const Camera& camera, float focalDist):
-    _width(wid), _height(hei), aspRat(static_cast<float>(wid) / hei), camera(camera), focalDist(focalDist) {
+  inline Raygen(int32_t w, int32_t h, const Camera& camera, float focalDist):
+    width(w), height(h), aspRat(static_cast<float>(w) / h), camera(camera), focalDist(focalDist) {
 
   }
   /// <summary>
@@ -20,8 +20,8 @@ struct Raygen {
     y += 0.5f;
 
     /* Transform to NDC - 0.0 - 1.0 */
-    x /= _width;
-    y /= _height;
+    x /= width;
+    y /= height;
 
     /* To Screen space - bottom left is [-1;-1] and top right is [1;1] */
     x = (x * 2) - 1;
@@ -35,8 +35,9 @@ struct Raygen {
     return Ray { camera.pos, camera.applyTransformation(rayDir) };
   }
 
-  int32_t _width;
-  int32_t _height;
+private:
+  int32_t width;
+  int32_t height;
   float aspRat;
   const Camera& camera;
   float focalDist;

@@ -7,6 +7,7 @@
 enum class MaterialType {
   DIFFUSE,
   REFLECTIVE,
+  REFRACTIVE,
   NONE
 };
 

@@ -5,6 +5,9 @@
 #include <vector>
 #include <cstdint>
 
+#define GLM_FORCE_SSE2
+#define GLM_FORCE_INTRINSICS
+#define GLM_FORCE_PRECISION_LOWP_FLOAT
 #include "glm/glm.hpp"
 #include "glm/ext/matrix_transform.hpp"
 
