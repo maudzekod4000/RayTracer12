@@ -12,7 +12,7 @@ enum class MaterialType {
 };
 
 struct Material {
-  MaterialType type;
+  MaterialType type = MaterialType::NONE;
   Vec3 albedo{};
   bool smoothShading = false;
   float ior{};

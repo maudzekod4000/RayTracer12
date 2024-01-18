@@ -9,7 +9,7 @@ struct IntersectionData {
   Vec3 pN{};
   Vec3 hitBaryCentricCoordinates{};
   Vec3 pNNonSmooth{};
-  Material mat;
+  Material mat{};
   float t = 9999.9f;
   bool intersection = false;
 };

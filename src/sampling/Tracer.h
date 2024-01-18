@@ -12,7 +12,7 @@ struct Tracer {
   Tracer(Scene& scene, Lighting& lights, AABBTree& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
 
   inline InternalColor trace(const Ray& ray, int depth) {
-    if (depth > 10) {
+    if (depth > 20) {
       return Vec3();
     }
     IntersectionData intersectionData = aabb.intersectAABBTree(ray);
@@ -32,12 +32,14 @@ struct Tracer {
         Vec3 refractionColor;
         // compute fresnel
         float kr;
-        fresnel(ray.dir, intersectionData.pN, 1.5f, kr);
-        bool outside = glm::dot(ray.dir, intersectionData.pN) < 0;
-        Vec3 bias = 0.0001f * intersectionData.pN;
+        Vec3 N = intersectionData.pNNonSmooth;
+        Vec3 rayDir = ray.dir;
+        fresnel(rayDir, N, 1.5f, kr);
+        bool outside = glm::dot(rayDir, N) < 0;
+        Vec3 bias = 0.001f * N;
         // compute refraction if it is not a case of total internal reflection
         if (kr < 1) {
-          Vec3 refractionDirection = glm::normalize(refract(ray.dir, intersectionData.pN, 1.5f));
+          Vec3 refractionDirection = glm::normalize(refract(rayDir, N, 1.5f));
           Vec3 refractionRayOrig = outside ? intersectionData.p - bias : intersectionData.p + bias;
           Ray newReflectionRay{
            refractionRayOrig,
@@ -46,11 +48,11 @@ struct Tracer {
           refractionColor = trace(newReflectionRay, depth + 1);
         }
 
-        Vec3 reflOrig = intersectionData.p + (intersectionData.pN * reflectionBias);
+        Vec3 reflOrig = intersectionData.p + (N * reflectionBias);
         Vec3 reflectionRayOrig = outside ? reflOrig + bias : reflOrig - bias;
         Ray newReflectionRay{
           reflectionRayOrig,
-          glm::normalize(glm::reflect(ray.dir, intersectionData.pN))
+          glm::normalize(glm::reflect(rayDir, N))
         };
         Vec3 reflectionColor = trace(newReflectionRay, depth + 1);
         // mix the two
