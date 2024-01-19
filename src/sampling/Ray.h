@@ -6,7 +6,6 @@
 struct Ray {
   Vec3 origin{};
   Vec3 dir{};
-  uint32_t depth{};
 };
 
 #endif // !RAY_H

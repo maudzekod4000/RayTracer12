@@ -20,6 +20,7 @@ struct BucketRenderer {
     tracer(tracer),
     scene(scene),
     imageBuffer(image) {
+
     buildBuckets(); threadPool.start();
   }
 
@@ -47,7 +48,7 @@ private:
   Tracer& tracer;
   Scene& scene;
   PPMImage& imageBuffer;
-  int32_t bucketSize = 20;
+  int32_t bucketSize = 20; // TODO: When this size is changed, the rendering crashes.
 
   // Splits the image plane into squares for parallel rendering.
   void buildBuckets() {

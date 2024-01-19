@@ -8,10 +8,10 @@
 #include "sampling/Triangle.h"
 #include "AABB.h"
 #include "sampling/IntersectionData.h"
-#include <utils/TypeDefs.h>
+#include "utils/TypeDefs.h"
 
 struct Node {
-	Node(std::vector<Triangle>& triangles, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
+	Node(const std::vector<Triangle>& triangles, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
 		triangles(triangles),
 		isLeaf(isLeaf),
 		box({ min, max }),
@@ -19,15 +19,15 @@ struct Node {
 		child2Idx(child2) {}
 	Node() = default;
 
+	AABB box;
 	std::vector<Triangle> triangles;
 	bool isLeaf;
-	AABB box;
 	int child1Idx{};
 	int child2Idx{};
 };
 
 struct AABBTree {
-	AABBTree(std::vector<Object>& objects, int32_t triangleCount = 0): objects(objects), triangleCount(triangleCount) {
+	inline AABBTree(std::vector<Object>& objects, int32_t triangleCount = 0): objects(objects), triangleCount(triangleCount) {
 		std::cout << "Building optimisation structure...\n";
 		AABB aabb;
 		std::vector<Triangle> triangles;
@@ -51,14 +51,13 @@ struct AABBTree {
 		IntersectionData intrsData{};
 
 		while (!boxStack.empty()) {
-			Node currentBox = boxStack.top();
-			boxStack.pop();
+			Node currentBox = boxStack.top(); boxStack.pop();
 
 			if (currentBox.box.intersect(ray)) {
 				// The ray intersects the box lets move on to its children! :}
 				if (currentBox.isLeaf) {
 					// This is a leaf node, let's intersect all the objects in it and update intrsData
-					for (Triangle& tri : currentBox.triangles) {
+					for (const Triangle& tri : currentBox.triangles) {
 						if (tri.intersect(ray, intrsData)) {
 							intrsData.mat = objects[tri.objIdx].mat;
 						}

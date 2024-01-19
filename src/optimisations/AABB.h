@@ -4,29 +4,24 @@
 #include <vector>
 #include <limits>
 
-#include <utils/TypeDefs.h>
+#include "utils/TypeDefs.h"
 #include "sampling/Triangle.h"
 #include "sampling/Vertex.h"
 
 struct AABB {
-  AABB() : min(Vec3(std::numeric_limits<float>::max())), max(-min) {}
-  AABB(Vec3& min, Vec3& max) : min(min), max(max) {}
+  AABB(): min(Vec3(std::numeric_limits<float>::max())), max(-min) {}
+  AABB(Vec3& min, Vec3& max): min(min), max(max) {}
+  explicit AABB(const Triangle& t): AABB() { this->expand(t); }
   Vec3 min;
   Vec3 max;
 
   inline void expand(const Triangle& triangle) {
-    std::vector<Vertex> vertices = { triangle.a, triangle.b, triangle.c };
-
-    for (Vertex& vertex : vertices) {
-      min = glm::min(vertex.pos, min);
-      max = glm::max(vertex.pos, max);
-    }
+    min = glm::min(triangle.a.pos, glm::min(triangle.b.pos, glm::min(triangle.c.pos, min)));
+    max = glm::max(triangle.a.pos, glm::max(triangle.b.pos, glm::max(triangle.c.pos, max)));
   }
 
   inline bool intersect(const Triangle& triangle) const {
-    AABB triBox;
-    triBox.expand(triangle);
-    return this->intersect(triBox);
+    return this->intersect(AABB(triangle));
   }
 
   inline bool intersect(const AABB& aabb) const {
@@ -35,6 +30,7 @@ struct AABB {
       max.z >= aabb.min.z && aabb.max.z >= min.z;
   }
 
+  // Ray-box intersection algorithm taken from the internet
   inline bool intersect(const Ray& r) const {
     float tmin = (min.x - r.origin.x) / r.dir.x;
     float tmax = (max.x - r.origin.x) / r.dir.x;

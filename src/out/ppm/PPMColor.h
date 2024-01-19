@@ -10,7 +10,7 @@ struct PPMColor {
   uint8_t g;
   uint8_t b;
 
-  inline static PPMColor from(const InternalColor& color) {
+  inline static PPMColor from(const NormalizedColor& color) {
     float r = glm::clamp(color.r, 0.0f, 1.0f);
     float g = glm::clamp(color.g, 0.0f, 1.0f);
     float b = glm::clamp(color.b, 0.0f, 1.0f);

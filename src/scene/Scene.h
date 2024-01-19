@@ -263,7 +263,7 @@ private:
 
           if (currentObject.mat.type == MaterialType::NONE) {
             // Set a random color if the object has no material
-            currentObject.mat.albedo = InternalColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
+            currentObject.mat.albedo = NormalizedColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
           }
 
           objects.push_back(currentObject);

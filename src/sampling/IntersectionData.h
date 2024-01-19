@@ -1,7 +1,7 @@
 #ifndef INTERSECTION_DATA_H
 #define INTERSECTION_DATA_H
 
-#include <utils/TypeDefs.h>
+#include "utils/TypeDefs.h"
 #include "sampling/Material.h"
 
 struct IntersectionData {
