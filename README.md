@@ -6,8 +6,8 @@
 - Smooth shading
 - Barycentric coordinates calculation
 - Lighting
-- Bucket rendering
-- Kd tree
+- Bucket multithreaded rendering
+- AABB tree optimisation structure
 - Camera transformations
 
 ## Renders
