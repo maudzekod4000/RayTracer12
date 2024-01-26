@@ -8,7 +8,7 @@
 
 struct Triangle {
   inline Triangle(const Vertex& a, const Vertex& b, const Vertex& c) : a(a), b(b), c(c),
-    n(glm::normalize(glm::cross(b.pos - a.pos, c.pos - a.pos))) {}
+    n(glm::normalize(glm::cross(b.pos - a.pos, c.pos - a.pos))), objIdx(-1) {}
 
   Vertex a;
   Vertex b;

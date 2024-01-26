@@ -14,7 +14,7 @@ struct Tracer {
   Tracer(Scene& scene, Lighting& lights, AABBTree& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
 
   inline NormalizedColor trace(const Ray& ray, int depth) {
-    if (depth > 5) {
+    if (depth > 10) {
       return Vec3();
     }
     IntersectionData intersectionData = aabb.intersectAABBTree(ray);
@@ -25,41 +25,44 @@ struct Tracer {
         return intersectionData.mat.albedo + clr;
       }
       else if (intersectionData.mat.type == MaterialType::REFLECTIVE) {
+        bool outside = glm::dot(ray.dir, intersectionData.pN) < 0;
+        Vec3 bias = reflectionBias * intersectionData.pN;
         Ray newReflectionRay{
-          intersectionData.p + (intersectionData.pN * reflectionBias),
-          glm::reflect(ray.dir, intersectionData.pN)
+          outside ? intersectionData.p + bias : intersectionData.p - bias,
+          glm::normalize(glm::reflect(ray.dir, intersectionData.pN))
         };
         return trace(newReflectionRay, depth + 1) + lighting.light(intersectionData);
       }
       else if (intersectionData.mat.type == MaterialType::REFRACTIVE) {
-        // TODO: This does not work...
-        Vec3 N = intersectionData.pN;
-        Vec3 I = glm::normalize(ray.dir);
-        float n1 = 1.0f;
-        float n2 = 1.5f;
-        if (glm::dot(I, N) > 0) {
-          N = -N;
-          std::swap(n1, n2);
-        }
-        float kr = 0.0f;
-        fresnel(I, N, n2, kr);
-
-        /*float cosin = -glm::dot(I, N); */
-        NormalizedColor refrClr = Vec3(0.0f);
+        Vec3 refractionColor;
+        // compute fresnel
+        float kr;
+        Vec3 dir = glm::normalize(ray.dir);
+        Vec3 N = intersectionData.pNNonSmooth;
+        fresnel(dir, N, 1.5f, kr);
+        bool outside = glm::dot(dir, N) < 0;
+        Vec3 bias = reflectionBias * N;
+        // compute refraction if it is not a case of total internal reflection
         if (kr < 1) {
-          Vec3 refractVec = glm::refract(glm::normalize(ray.dir), intersectionData.pN, (1.0f / 1.5f));
-          Ray refRay{
-            intersectionData.p + (-N * reflectionBias),
-            refractVec
+          Vec3 refractionDirection = glm::normalize(refract(dir, N, 1.5f));
+          Vec3 refractionRayOrig = outside ? intersectionData.p - bias : intersectionData.p + bias;
+          Ray refrRay{
+            refractionRayOrig,
+            refractionDirection
           };
-          refrClr = trace(refRay, depth + 1);
+          refractionColor = trace(refrRay, depth + 1);
         }
-        Ray reflRay{
-          intersectionData.p + (N * reflectionBias),
-          glm::reflect(I, N)
+
+        Vec3 reflectionDirection = glm::normalize(glm::reflect(dir, N));
+        Vec3 reflectionRayOrig = outside ? intersectionData.p + bias : intersectionData.p - bias;
+        Ray newReflectionRay{
+          reflectionRayOrig,
+          reflectionDirection
         };
-        NormalizedColor reflClr = trace(reflRay, depth + 1);
-        return kr * reflClr + (1 - kr) * refrClr;
+        Vec3 reflectionColor = trace(newReflectionRay, depth + 1);
+
+        // mix the two
+        return reflectionColor * kr + refractionColor * (1 - kr);
       }
     }
 
@@ -69,7 +72,19 @@ private:
   Scene& scene;
   Lighting& lighting;
   AABBTree& aabb;
-  float reflectionBias = 0.01f;
+  float reflectionBias = 0.1f;
+
+  Vec3 refract(const Vec3& I, const Vec3& N, const float& ior)
+  {
+    float cosi = glm::clamp(-1.0f, 1.0f, glm::dot(I, N));
+    float etai = 1, etat = ior;
+    Vec3 n = N;
+    if (cosi < 0) { cosi = -cosi; }
+    else { std::swap(etai, etat); n = -N; }
+    float eta = etai / etat;
+    float k = 1 - eta * eta * (1 - cosi * cosi);
+    return k < 0 ? Vec3() : eta * I + (eta * cosi - sqrtf(k)) * n;
+  }
 
   void fresnel(const Vec3& I, const Vec3& N, const float& ior, float& kr)
   {
@@ -93,6 +108,5 @@ private:
     // kt = 1 - kr;
   }
 };
-
 
 #endif // !TRACER_H
