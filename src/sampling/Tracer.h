@@ -29,35 +29,30 @@ struct Tracer {
         Vec3 bias = reflectionBias * intersectionData.pN;
         Ray newReflectionRay{
           outside ? intersectionData.p + bias : intersectionData.p - bias,
-          glm::normalize(glm::reflect(ray.dir, intersectionData.pN))
+          glm::reflect(ray.dir, intersectionData.pN)
         };
         return trace(newReflectionRay, depth + 1) + lighting.light(intersectionData);
       }
       else if (intersectionData.mat.type == MaterialType::REFRACTIVE) {
         Vec3 refractionColor;
-        // compute fresnel
         float kr;
-        Vec3 dir = glm::normalize(ray.dir);
+        Vec3 dir = ray.dir;
         Vec3 N = intersectionData.pNNonSmooth;
-        fresnel(dir, N, 1.5f, kr);
+        fresnel(dir, N, intersectionData.mat.ior, kr);
         bool outside = glm::dot(dir, N) < 0;
         Vec3 bias = reflectionBias * N;
         // compute refraction if it is not a case of total internal reflection
         if (kr < 1) {
-          Vec3 refractionDirection = glm::normalize(refract(dir, N, 1.5f));
-          Vec3 refractionRayOrig = outside ? intersectionData.p - bias : intersectionData.p + bias;
           Ray refrRay{
-            refractionRayOrig,
-            refractionDirection
+            outside ? intersectionData.p - bias : intersectionData.p + bias,
+            refract(dir, N, intersectionData.mat.ior)
           };
           refractionColor = trace(refrRay, depth + 1);
         }
 
-        Vec3 reflectionDirection = glm::normalize(glm::reflect(dir, N));
-        Vec3 reflectionRayOrig = outside ? intersectionData.p + bias : intersectionData.p - bias;
         Ray newReflectionRay{
-          reflectionRayOrig,
-          reflectionDirection
+          outside ? intersectionData.p + bias : intersectionData.p - bias,
+          glm::reflect(dir, N)
         };
         Vec3 reflectionColor = trace(newReflectionRay, depth + 1);
 
@@ -72,8 +67,9 @@ private:
   Scene& scene;
   Lighting& lighting;
   AABBTree& aabb;
-  float reflectionBias = 0.1f;
+  float reflectionBias = 0.001f;
 
+  /// Taken from the Scratch a pixel tutorial on refraction
   Vec3 refract(const Vec3& I, const Vec3& N, const float& ior)
   {
     float cosi = glm::clamp(-1.0f, 1.0f, glm::dot(I, N));

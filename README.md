@@ -2,8 +2,8 @@
 
 ## Features
 
-- Diffuse, Reflective materials
-- Smooth shading
+- Diffuse, Reflective materials, Refractive materials
+- Smooth shading [A bit problematic...have to check it]
 - Barycentric coordinates calculation
 - Lighting
 - Bucket multithreaded rendering
@@ -18,3 +18,4 @@
 ![Casting shadows of a dragon with 3 light sources](https://github.com/pancanin/RayTracer12/blob/main/screenshots/shadowdragon.png?raw=true)
 ![Smooth normals on a ball](https://github.com/pancanin/RayTracer12/blob/main/screenshots/bally.png?raw=true)
 ![Dragon with reflections](https://github.com/pancanin/RayTracer12/blob/main/screenshots/pinkglassdragon.png?raw=true)
+![Glass boll with refraction](https://github.com/pancanin/RayTracer12/blob/main/screenshots/glassball.png?raw=true)
