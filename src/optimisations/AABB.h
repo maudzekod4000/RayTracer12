@@ -9,8 +9,8 @@
 #include "sampling/Vertex.h"
 
 struct AABB {
-  AABB(): min(Vec3(std::numeric_limits<float>::max())), max(-min) {}
-  AABB(Vec3& min, Vec3& max): min(min), max(max) {}
+  explicit AABB(): min(Vec3(std::numeric_limits<float>::max())), max(-min) {}
+  explicit AABB(Vec3& min, Vec3& max): min(min), max(max) {}
   explicit AABB(const Triangle& t): AABB() { this->expand(t); }
   Vec3 min;
   Vec3 max;
@@ -34,38 +34,30 @@ struct AABB {
   inline bool intersect(const Ray& r) const {
     float tmin = (min.x - r.origin.x) / r.dir.x;
     float tmax = (max.x - r.origin.x) / r.dir.x;
-
-    if (tmin > tmax) std::swap(tmin, tmax);
+    float temp = tmin;
+    tmin = std::min(tmin, tmax);
+    tmax = std::max(temp, tmax);
 
     float tymin = (min.y - r.origin.y) / r.dir.y;
     float tymax = (max.y - r.origin.y) / r.dir.y;
 
-    if (tymin > tymax) std::swap(tymin, tymax);
+    float tempy = tymin;
+    tymin = std::min(tymin, tymax);
+    tymax = std::max(tempy, tymax);
 
     if ((tmin > tymax) || (tymin > tmax))
       return false;
 
-    if (tymin > tmin)
-      tmin = tymin;
-
-    if (tymax < tmax)
-      tmax = tymax;
+    tmin = std::max(tmin, tymin);
+    tmax = std::min(tymax, tmax);
 
     float tzmin = (min.z - r.origin.z) / r.dir.z;
     float tzmax = (max.z - r.origin.z) / r.dir.z;
+    float tempz = tzmin;
+    tzmin = std::min(tzmin, tzmax);
+    tzmax = std::max(tempz, tzmax);
 
-    if (tzmin > tzmax) std::swap(tzmin, tzmax);
-
-    if ((tmin > tzmax) || (tzmin > tmax))
-      return false;
-
-    if (tzmin > tmin)
-      tmin = tzmin;
-
-    if (tzmax < tmax)
-      tmax = tzmax;
-
-    return true;
+    return !((tmin > tzmax) || (tzmin > tmax));
   }
 };
 

@@ -14,7 +14,7 @@ struct Node {
 	Node(const std::vector<Triangle>& triangles, bool isLeaf, Vec3& min, Vec3& max, int child1, int child2) :
 		triangles(triangles),
 		isLeaf(isLeaf),
-		box({ min, max }),
+		box(AABB(min, max)),
 		child1Idx(child1),
 		child2Idx(child2) {}
 	Node() = default;
@@ -27,17 +27,18 @@ struct Node {
 };
 
 struct AABBTree {
-	inline AABBTree(std::vector<Object>& objects, int32_t triangleCount = 0): objects(objects), triangleCount(triangleCount) {
+	inline AABBTree(const std::vector<Object>& objects, int32_t triangleCount = 0): triangleCount(triangleCount) {
 		std::cout << "Building optimisation structure...\n";
 		AABB aabb;
 		std::vector<Triangle> triangles;
 		triangles.reserve(triangleCount);
-
-		for (const Object& obj : objects) {
-			for (const Triangle& tri : obj.triangles) {
+		materialMap.reserve(objects.size());
+		for (size_t i = 0; i < objects.size(); i++) {
+			for (const Triangle& tri : objects[i].triangles) {
 				aabb.expand(tri);
 				triangles.push_back(tri);
 			}
+			materialMap.push_back(objects[i].mat);
 		}
 		buildTree(triangles, aabb, 0, -1, -1, 0);
 
@@ -45,13 +46,14 @@ struct AABBTree {
 	}
 
 	inline IntersectionData intersectAABBTree(const Ray& ray) {
-		std::stack<Node> boxStack;
+		std::vector<Node> boxStack;
+		boxStack.reserve(maxDepth + 1);
 
-		boxStack.push(nodes[0]);
+		boxStack.push_back(nodes[0]);
 		IntersectionData intrsData{};
 
-		while (!boxStack.empty()) {
-			Node currentBox = boxStack.top(); boxStack.pop();
+		while (boxStack.size() > 0) {
+			Node currentBox = boxStack.back(); boxStack.pop_back();
 
 			if (currentBox.box.intersect(ray)) {
 				// The ray intersects the box lets move on to its children! :}
@@ -59,14 +61,14 @@ struct AABBTree {
 					// This is a leaf node, let's intersect all the objects in it and update intrsData
 					for (const Triangle& tri : currentBox.triangles) {
 						if (tri.intersect(ray, intrsData)) {
-							intrsData.mat = objects[tri.objIdx].mat;
+							intrsData.mat = materialMap[tri.objIdx];
 						}
 					}
 				}
 				else {
 					// This is not a leaf node. Let's add it's children to the stack
-					boxStack.push(nodes[currentBox.child1Idx]);
-					boxStack.push(nodes[currentBox.child2Idx]);
+					boxStack.push_back(nodes[currentBox.child1Idx]);
+					boxStack.push_back(nodes[currentBox.child2Idx]);
 				}
 			}
 		}
@@ -77,7 +79,7 @@ struct AABBTree {
 private:
 	std::vector<Node> nodes;
 	int32_t leafSize = 1;
-	std::vector<Object> objects;
+	std::vector<Material> materialMap;
 	int32_t maxDepth = 12;
 	int32_t triangleCount = 0;
 

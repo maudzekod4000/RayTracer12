@@ -12,10 +12,11 @@ enum class MaterialType {
 };
 
 struct Material {
-  MaterialType type = MaterialType::NONE;
-  Vec3 albedo{};
-  bool smoothShading = false;
-  float ior{};
+  Material() : type(MaterialType::NONE), albedo(0.0f), smoothShading(false), ior(1.0f) {}
+  MaterialType type;
+  Vec3 albedo;
+  bool smoothShading;
+  float ior;
 };
 
 #endif // !MATERIAL_H

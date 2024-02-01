@@ -22,17 +22,11 @@ struct Triangle {
 
   inline bool intersect(const Ray& ray, IntersectionData& intersectionData) const {
     float rayProjectionOnPlaneNormal = glm::dot(ray.dir, n);
-
-    /* The ray is perpendicular we have no work */
-    if (rayProjectionOnPlaneNormal == 0.0f) {
-      return false;
-    }
-
     // This is the projection of the vector to the point in the triangle on the normal.
     // It is also the distance from the ray origin to the plane.
     float t = glm::dot(this->a.pos - ray.origin, n) / rayProjectionOnPlaneNormal;
 
-    if (t <= 0 || t > intersectionData.t) {
+    if (t > intersectionData.t || t <= 0) {
       return false;
     }
 

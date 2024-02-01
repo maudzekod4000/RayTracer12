@@ -27,10 +27,10 @@ struct Tracer {
       else if (intersectionData.mat.type == MaterialType::REFLECTIVE) {
         bool outside = glm::dot(ray.dir, intersectionData.pN) < 0;
         Vec3 bias = reflectionBias * intersectionData.pN;
-        Ray newReflectionRay{
+        Ray newReflectionRay(
           outside ? intersectionData.p + bias : intersectionData.p - bias,
           glm::reflect(ray.dir, intersectionData.pN)
-        };
+        );
         return trace(newReflectionRay, depth + 1) + lighting.light(intersectionData);
       }
       else if (intersectionData.mat.type == MaterialType::REFRACTIVE) {
@@ -43,17 +43,17 @@ struct Tracer {
         Vec3 bias = reflectionBias * N;
         // compute refraction if it is not a case of total internal reflection
         if (kr < 1) {
-          Ray refrRay{
+          Ray refrRay(
             outside ? intersectionData.p - bias : intersectionData.p + bias,
             refract(dir, N, intersectionData.mat.ior)
-          };
+          );
           refractionColor = trace(refrRay, depth + 1);
         }
 
-        Ray newReflectionRay{
+        Ray newReflectionRay(
           outside ? intersectionData.p + bias : intersectionData.p - bias,
           glm::reflect(dir, N)
-        };
+        );
         Vec3 reflectionColor = trace(newReflectionRay, depth + 1);
 
         // mix the two

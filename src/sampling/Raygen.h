@@ -32,7 +32,7 @@ struct Raygen {
 
     Vec3 rayDir(x, y, focalDist);
 
-    return Ray { camera.pos, camera.applyTransformation(rayDir) };
+    return Ray(camera.pos, glm::normalize(camera.applyTransformation(rayDir)));
   }
 
 private:

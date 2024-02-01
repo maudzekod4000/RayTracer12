@@ -18,33 +18,27 @@ struct LightOptions {
 };
 
 struct Lighting {
-  inline Lighting(LightOptions& opts, const std::vector<Light>& lights, AABBTree& tree):
+  Lighting(LightOptions& opts, const std::vector<Light>& lights, AABBTree& tree):
     options(opts), lights(lights), tree(tree) {}
 
   /// <summary>
   /// Calculates the shadow color from an intersection point.
   /// </summary>
-  /// <param name="intersectionData">Data about the currently traced intersection.</param>
+  /// <param name="hit">Data about the currently traced intersection.</param>
   /// <returns>Color for the shadow on the pixel currently sampled.</returns>
-  inline NormalizedColor light(const IntersectionData& intersectionData) {
-    NormalizedColor lightContributionColor{};
+  inline NormalizedColor light(const IntersectionData& hit) {
+    NormalizedColor lightContributionColor(0.0f);
 
     for (const Light& light : lights) {
-      Vec3 lightDir = light.pos - intersectionData.p;
-      float sphereRadius = glm::length(lightDir);
+      Vec3 lightDir = light.pos - hit.p;
+      const float sphereRadius = glm::length(lightDir);
       lightDir = glm::normalize(lightDir);
-      float cosLaw = calcCosineLaw(intersectionData.pN, lightDir);
-      float area = calcSphereArea(sphereRadius);
-      Ray shadowRay{ intersectionData.p + (intersectionData.pN * options.shadowBias), lightDir };
-      
-      bool intersects = false;
-      IntersectionData intrData = tree.intersectAABBTree(shadowRay);
-      if (intrData.t < sphereRadius) {
-        intersects = true;
-      }
+      const Ray shadowRay(hit.p + (hit.pN * options.shadowBias), lightDir);
+      const IntersectionData intrData = tree.intersectAABBTree(shadowRay);
 
-      if (!intersects) {
-        float color = light.intensity / calcSphereArea(sphereRadius) * options.albedo * cosLaw;
+      if (intrData.t >= sphereRadius) {
+        const float cosLaw = calcCosineLaw(hit.pN, lightDir);
+        const float color = light.intensity / calcSphereArea(sphereRadius) * options.albedo * cosLaw;
         lightContributionColor += NormalizedColor(color);
       }
     }

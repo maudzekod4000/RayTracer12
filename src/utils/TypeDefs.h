@@ -13,10 +13,14 @@
 
 #define MAX_COLOR 255
 
-typedef glm::vec2 Point2D;
 typedef glm::vec3 Vec3;
 
 /// Each color component is between 0-1
 typedef glm::vec3 NormalizedColor;
+//typedef float flt;
+//
+//struct Vec3 {
+//	flt x;
+//};
 
 #endif // !TYPE_DEFS_H
