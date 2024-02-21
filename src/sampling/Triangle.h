@@ -48,12 +48,12 @@ struct Triangle {
     intersectionData.intersection = true;
 
     // Calculate barycentric coordinates of the hit and set the hit normal
-    float areaM = area(a.pos, p, c.pos);
-    float areaN = area(a.pos, b.pos, p);
-    float areaTri = area();
+    Vec3 V0V1 = b.pos - a.pos;
+    Vec3 V0V2 = c.pos - a.pos;
+    Vec3 V0P = intersectionData.p - a.pos;
 
-    float u = areaM / areaTri;
-    float v = areaN / areaTri;
+    float u = glm::length(glm::cross(V0P, V0V2)) / glm::length(glm::cross(V0V1, V0V2));
+    float v = glm::length(glm::cross(V0V1, V0P)) / glm::length(glm::cross(V0V1, V0V2));
     float w = 1 - u - v;
     intersectionData.hitBaryCentricCoordinates = Vec3(1 - u - v, u, v);
     intersectionData.pN = b.smoothNormal * u + c.smoothNormal * v + a.smoothNormal * w;
