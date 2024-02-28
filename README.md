@@ -19,3 +19,5 @@
 ![Smooth normals on a ball](https://github.com/pancanin/RayTracer12/blob/main/screenshots/bally.png?raw=true)
 ![Dragon with reflections](https://github.com/pancanin/RayTracer12/blob/main/screenshots/pinkglassdragon.png?raw=true)
 ![Glass boll with refraction](https://github.com/pancanin/RayTracer12/blob/main/screenshots/glassball.png?raw=true)
+![Soap bubble](https://github.com/pancanin/RayTracer12/blob/main/screenshots/refraction-only-bubble.png?raw=true)
+![ball behind a glass cube](https://github.com/pancanin/RayTracer12/blob/main/screenshots/refraction-working.png?raw=true)

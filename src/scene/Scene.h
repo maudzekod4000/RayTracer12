@@ -156,6 +156,7 @@ private:
           }
           else if (type == "refractive") {
             mat.type = MaterialType::REFRACTIVE;
+            mat.ior = materialVal.FindMember("ior")->value.GetFloat();
           }
           else {
             mat.type = MaterialType::NONE;
