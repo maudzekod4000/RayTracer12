@@ -4,6 +4,7 @@
 #include <stack>
 #include <mutex>
 #include <thread>
+#include <math.h>
 
 #include "Bucket.h"
 #include "sampling/Raygen.h"
@@ -29,10 +30,11 @@ struct BucketRenderer {
     while (!buckets.empty()) {
       Bucket bucket = buckets.top();
       buckets.pop();
+      const PPMImageMeta& metadata = imageBuffer.getMetadata();
 
-      auto renderJob = [bucket, this]() {
-        for (int32_t row = bucket.y; row < bucket.y + bucketSize; row++) {
-          for (int32_t col = bucket.x; col < bucket.x + bucketSize; col++) {
+      auto renderJob = [&metadata, bucket, this]() {
+        for (int32_t row = bucket.y; row < std::min(bucket.y + bucketSize, (int32_t)metadata.getHeight()); row++) {
+          for (int32_t col = bucket.x; col < std::min(bucket.x + bucketSize, (int32_t)metadata.getWidth()); col++) {
             Ray ray = rayGen.gen(col, row);
             imageBuffer.writePixel(row, col, PPMColor::from(tracer.trace(ray, 0)));
           }

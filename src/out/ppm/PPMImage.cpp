@@ -13,3 +13,9 @@ void PPMImage::writePixel(int32_t row, int32_t col, const PPMColor& color)
 {
   _image[row][col] = color;
 }
+
+
+const PPMImageMeta& PPMImage::getMetadata() const
+{
+  return _metadata;
+}

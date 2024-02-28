@@ -23,6 +23,9 @@ public:
 	/// </summary>
 	/// <param name="os">Output stream to write to.</param>
 	void writeHeaders(std::ostream& os) const;
+
+	uint16_t getWidth() const { return _imgWidth; }
+	uint16_t getHeight() const { return _imgHeight; }
 private:
 	std::string _colorFormat;
 	const uint16_t _imgWidth;
