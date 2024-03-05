@@ -25,17 +25,18 @@ struct Tracer {
         return intersectionData.mat.albedo + clr;
       }
       else if (intersectionData.mat.type == MaterialType::REFLECTIVE) {
-        bool outside = glm::dot(ray.dir, intersectionData.pNNonSmooth) < 0;
-        Vec3 bias = refractionBias * intersectionData.pNNonSmooth;
+        Vec3 N = intersectionData.mat.smoothShading ? intersectionData.pN : intersectionData.pNNonSmooth;
+        bool outside = glm::dot(ray.dir, N) < 0;
+        Vec3 bias = refractionBias * N;
         Ray newReflectionRay(
           outside ? intersectionData.p + bias : intersectionData.p - bias,
-          glm::reflect(ray.dir, intersectionData.pNNonSmooth)
+          glm::reflect(ray.dir, N)
         );
-        return trace(newReflectionRay, depth + 1);
+        return intersectionData.mat.albedo + trace(newReflectionRay, depth + 1);
       }
       else if (intersectionData.mat.type == MaterialType::REFRACTIVE) {
         Vec3 I = ray.dir;
-        Vec3 N = intersectionData.pNNonSmooth; // There is a problem with smooth normals...
+        Vec3 N = intersectionData.mat.smoothShading ? intersectionData.pN : intersectionData.pNNonSmooth;
         float n1 = 1.0f;
         float n2 = intersectionData.mat.ior;
         float angleIN = glm::dot(I, N);
@@ -69,18 +70,12 @@ struct Tracer {
           fresnel = (Rs * Rs + Rp * Rp) / 2.0f;
         }
 
-
         Ray newReflectionRay(
           intersectionData.p + (N * reflectionBias),
           glm::reflect(I, N)
         );
         NormalizedColor reflCol = trace(newReflectionRay, depth + 1);
-
-        
-
-        //float fresnel = 0.5f * powf(1.0f - fabs(angleIN), 5.0f);
         return fresnel * reflCol + (1.0f - fresnel) * refrCol;
-        //return refrCol;
       }
     }
 
