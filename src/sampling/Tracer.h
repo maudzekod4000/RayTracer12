@@ -14,15 +14,14 @@ struct Tracer {
   Tracer(Scene& scene, Lighting& lights, AABBTree& aabb) : scene(scene), lighting(lights), aabb(aabb) {}
 
   inline NormalizedColor trace(const Ray& ray, int depth) {
-    if (depth > 15) {
+    if (depth > 8) {
       return scene.settings.backgroundColor;
     }
     IntersectionData intersectionData = aabb.intersectAABBTree(ray);
 
     if (intersectionData.intersection) {
       if (intersectionData.mat.type == MaterialType::DIFFUSE || intersectionData.mat.type == MaterialType::NONE) {
-        NormalizedColor clr = lighting.light(intersectionData);
-        return intersectionData.mat.albedo + clr;
+        return intersectionData.mat.albedo + shadeDiffuse(ray, intersectionData, depth + 1);
       }
       else if (intersectionData.mat.type == MaterialType::REFLECTIVE) {
         Vec3 N = intersectionData.mat.smoothShading ? intersectionData.pN : intersectionData.pNNonSmooth;
@@ -87,12 +86,48 @@ private:
   AABBTree& aabb;
   float refractionBias = 0.0001;
   float reflectionBias = 0.0004;
+  const size_t diffuseReflCount = 8;
 
-  inline Vec3 refract(const Vec3& uv, const Vec3& n, float etai_over_etat) {
-    float cos_theta = fmin(dot(-uv, n), 1.0);
-    Vec3 r_out_perp = etai_over_etat * (uv + cos_theta * n);
-    Vec3 r_out_parallel = -sqrt(std::fabs(1.0f - glm::length(r_out_perp) * glm::length(r_out_perp))) * n;
-    return r_out_perp + r_out_parallel;
+  inline NormalizedColor shadeDiffuse(const Ray& ray, const IntersectionData& intrs, int depth) {
+      NormalizedColor diffReflColor(0.0f);
+
+      for (size_t i = 0; i < diffuseReflCount; i++) {
+          Vec3 rightAxis = glm::normalize(glm::cross(ray.dir, intrs.pN));
+          Vec3 upAxis = intrs.pN;
+          Vec3 forwardAxis = glm::cross(rightAxis, upAxis);
+
+          glm::mat3x3 localHitMatrix(1.0f);
+          localHitMatrix[0] = rightAxis;
+          localHitMatrix[1] = forwardAxis;
+          localHitMatrix[2] = upAxis;
+
+          // Generate random angle in the XY plane
+          float randAngleInXY = M_PI * (rand() / RAND_MAX);
+          // COnstruct random vector in the XY plane
+          Vec3 randVecXY = Vec3(cos(randAngleInXY), sin(randAngleInXY), 0);
+
+          // Generate random angle in the XZ plane
+          float randAngleINXZ = M_PI * 2 * (rand() / RAND_MAX);
+          glm::mat3x3 rotMatY(1.0f);
+          rotMatY[0][0] = cos(randAngleINXZ);
+          rotMatY[2][0] = -sin(randAngleINXZ);
+          rotMatY[0][2] = sin(randAngleINXZ);
+          rotMatY[2][2] = cos(randAngleINXZ);
+
+          Vec3 randVecInXYRotated = randVecXY * rotMatY;
+
+          Vec3 diffReflRayDir = randVecInXYRotated * localHitMatrix;
+          Vec3 diffRayOrigin = intrs.p + (intrs.pN * reflectionBias);
+          Ray diffRay(diffRayOrigin, diffReflRayDir);
+
+          diffReflColor = diffReflColor + trace(diffRay, depth + 1);
+      }
+
+      NormalizedColor clr = lighting.light(intrs);
+
+      diffReflColor = diffReflColor + clr;
+
+      return diffReflColor / (float)(diffuseReflCount + 1);
   }
 };
 
