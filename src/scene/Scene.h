@@ -16,6 +16,8 @@
 #include "sampling/Triangle.h"
 #include "sampling/Lighting.h"
 
+#include "math/Vec3.h"
+
 struct ImageSettings {
   int32_t width;
   int32_t heigth;
@@ -33,7 +35,7 @@ struct TempTriangle {
   int vertices[3];
 
   inline Vec3 normal() const {
-    return glm::normalize(glm::cross(b - a, c - a));
+    return Vec3();
   }
 };
 
@@ -43,7 +45,7 @@ struct Scene {
   }
 
   struct Camera {
-    glm::mat3 matrix;
+    //glm::mat3 matrix;
     Vec3 position;
   };
 
@@ -63,26 +65,26 @@ private:
     Document doc;
     doc.ParseStream(isw);
 
-    if (!doc.HasParseError() && doc.IsObject()) {
+    if (doc.IsObject()) {
       const Value& settingsVal = doc.FindMember("settings")->value;
 
-      if (!settingsVal.IsNull() && settingsVal.IsObject()) {
+      if (settingsVal.IsObject()) {
         const Value& imageSettingsVal = settingsVal.FindMember("image_settings")->value;
         const Value& imageWidthVal = imageSettingsVal.FindMember("width")->value;
-        if (!imageWidthVal.IsNull() && imageWidthVal.IsInt()) {
+        if (imageWidthVal.IsInt()) {
           settings.imageSettings.width = imageWidthVal.GetInt();
         }
         const Value& imageHeightVal = imageSettingsVal.FindMember("height")->value;
-        if (!imageHeightVal.IsNull() && imageHeightVal.IsInt()) {
+        if (imageHeightVal.IsInt()) {
           settings.imageSettings.heigth = imageHeightVal.GetInt();
         }
 
         const Value& bgColorVal = settingsVal.FindMember("background_color")->value;
-        if (!bgColorVal.IsNull() && bgColorVal.IsArray()) {
+        if (bgColorVal.IsArray()) {
           GenericArray bgColorArr = bgColorVal.GetArray();
           if (bgColorArr.Size() == 3) {
             for (SizeType i = 0; i < bgColorArr.Size(); i++) {
-              settings.backgroundColor[i] = bgColorArr[i].GetFloat();
+              //settings.backgroundColor[i] = bgColorArr[i].GetFloat();
             }
           }
         }
@@ -95,7 +97,7 @@ private:
           GenericArray positionArr = positionVal.GetArray();
           if (positionArr.Size() == 3) {
             for (SizeType i = 0; i < positionArr.Size(); i++) {
-              camera.position[i] = positionArr[i].GetFloat();
+              //camera.position[i] = positionArr[i].GetFloat();
             }
           }
         }
@@ -106,10 +108,10 @@ private:
           if (matrixArr.Size() == 9) {
             for (SizeType i = 0; i < 3; i++) {
               Vec3 v = Vec3(matrixArr[i].GetFloat(), matrixArr[i + 3].GetFloat(), matrixArr[i + 6].GetFloat());
-              camera.matrix[i] = v;
+              //camera.matrix[i] = v;
             }
 
-            camera.matrix = glm::transpose(camera.matrix);
+            //camera.matrix = glm::transpose(camera.matrix);
           }
         }
       }
@@ -249,10 +251,10 @@ private:
 
             for (TempTriangle* tri : triangles) {
               Vec3 n = tri->normal();
-              smoothNormal += n;
+              //smoothNormal += n;
             }
 
-            vert.smoothNormal = glm::normalize(smoothNormal);
+            //vert.smoothNormal = glm::normalize(smoothNormal);
           }
 
           // Create the final triangle collection and delete all other data.
@@ -264,7 +266,7 @@ private:
 
           if (currentObject.mat.type == MaterialType::NONE) {
             // Set a random color if the object has no material
-            currentObject.mat.albedo = NormalizedColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
+            //currentObject.mat.albedo = NormalizedColor{ rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX), rand() / static_cast<float>(RAND_MAX) };
           }
 
           objects.push_back(currentObject);

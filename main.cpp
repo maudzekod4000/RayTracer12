@@ -36,34 +36,12 @@ int main(int argc, char** argv) {
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
   int32_t RENDER_HEIGHT = scene.settings.imageSettings.heigth;
   PPMImageMeta imageMetadata(RENDER_WIDTH, RENDER_HEIGHT, MAX_COLOR);
-  PPMImage image(imageMetadata);
-  Camera camera(scene.camera.position, scene.camera.matrix);
-  Raygen rayGenerator(RENDER_WIDTH, RENDER_HEIGHT, camera, -1);
-  PPMColor backGroundColor = PPMColor::from(scene.settings.backgroundColor);
-  const float shadowBias = 0.001f;
-  // Higher values result in more lit scene
-  const float lightIntensityMultiplier = 0.3;
-  LightOptions lightOptions{ shadowBias, lightIntensityMultiplier };
-  AABBTree tree(scene.objects);
-  Lighting lighting(lightOptions, scene.lights, tree);
-  Tracer tracer(scene, lighting, tree);
 
   auto start = std::chrono::steady_clock::now();
-
-  {
-    BucketRenderer bucketRenderer(rayGenerator, tracer, scene, image);
-
-    std::cout << "Rendering..." << '\n';
-
-    bucketRenderer.render();
-  }
 
   auto end = std::chrono::steady_clock::now();
   std::chrono::duration<double> elapsedSeconds = end - start;
   std::cout << "Rendering took " << elapsedSeconds.count() << " sec." << '\n';
-
-  PPMImageFileWriter fileWriter(image, "out.ppm");
-  fileWriter.write();
 
   return 0;
 }

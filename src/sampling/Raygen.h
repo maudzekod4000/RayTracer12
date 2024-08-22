@@ -15,24 +15,7 @@ struct Raygen {
   /// x, y are in raster coordinates.
   /// </summary>
   inline Ray gen(float x, float y) {
-    /* Sample the pixel at its center */
-    x += 0.5f;
-    y += 0.5f;
-
-    /* Transform to NDC - 0.0 - 1.0 */
-    x /= width;
-    y /= height;
-
-    /* To Screen space - bottom left is [-1;-1] and top right is [1;1] */
-    x = (x * 2) - 1;
-    y = 1 - (y * 2);
-
-    /* Consider the aspect ratio */
-    x *= aspRat;
-
-    Vec3 rayDir(x, y, focalDist);
-
-    return Ray(camera.pos, glm::normalize(camera.applyTransformation(rayDir)));
+    
   }
 
 private:
