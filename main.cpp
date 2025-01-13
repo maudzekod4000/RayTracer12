@@ -19,9 +19,9 @@
 #include "src/utils/TypeDefs.h"
 #include "sampling/Tracer.h"
 
-int main() {
+int main(int argc, char* argv[]) {
   std::cout << "Parsing scene object..." << '\n';
-  Scene scene("reflscene4.crtscene");
+  Scene scene(argv[1]);
   std::cout << "Completed parsing scene object" << '\n';
 
   int32_t RENDER_WIDTH = scene.settings.imageSettings.width;
